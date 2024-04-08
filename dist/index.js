@@ -10,6 +10,9 @@ const db_1 = __importDefault(require("./modules/config/db"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const cors_1 = __importDefault(require("cors"));
 const morgan_body_1 = __importDefault(require("morgan-body"));
+const passport_1 = __importDefault(require("passport"));
+const express_session_1 = __importDefault(require("express-session"));
+require("./modules/services/passport");
 //swagger imports
 const swaggerUi = require("swagger-ui-express");
 const swagger_output_json_1 = __importDefault(require("./swagger-output.json"));
@@ -31,9 +34,12 @@ dotenv_1.default.config();
 const PORT = 3000 || process.env.PORT;
 const app = (0, express_1.default)();
 //using middlewares
+app.use((0, express_session_1.default)({ secret: process.env.JWT_SECRET, resave: false, saveUninitialized: true, cookie: { secure: false } }));
 app.use(express_1.default.json());
 app.use((0, cors_1.default)());
 app.use(express_1.default.urlencoded({ extended: true }));
+app.use(passport_1.default.initialize());
+app.use(passport_1.default.session());
 //hooking morganBody with express app
 (0, morgan_body_1.default)(app);
 // setting routers

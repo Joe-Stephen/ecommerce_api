@@ -1,4 +1,6 @@
 import { Router } from "express";
+import passport from "passport";
+require("../services/passport")
 const userRouter = Router();
 
 //user functions
@@ -11,6 +13,7 @@ import {
   sendVerifyMail,
   verifyOtp,
   getMyMoment,
+  serveGoogleSignPage,
 } from "../user/userController";
 
 //cart functions
@@ -39,6 +42,39 @@ userRouter.post("/login", /* #swagger.tags = ['User'] */ loginUser);
 userRouter.post("/sendOtp", /* #swagger.tags = ['User'] */ sendVerifyMail);
 userRouter.post("/verifyEmail", /* #swagger.tags = ['User'] */ verifyOtp);
 userRouter.post("/", /* #swagger.tags = ['User'] */ createUser);
+
+//googel authentication routes
+userRouter.get(
+  "/auth/googleLoign",
+  /* #swagger.tags = ['User - Google Sign-in page'] */ serveGoogleSignPage
+);
+userRouter.get(
+  "/auth/google",
+  /* #swagger.tags = ['User - Google Sign-in page'] */ passport.authenticate(
+    "google",
+    { scope: ["email", "profile"] }
+  )
+);
+userRouter.get(
+  "/auth/google/callback",
+  /* #swagger.tags = ['User - Google Sign-in page'] */ passport.authenticate(
+    "google",
+    {
+      session: false,
+      successRedirect: "/auth/google/success",
+      failureRedirect: "/auth/google/failure",
+    }
+  )
+);
+
+userRouter.get("/auth/google/success", (req: any, res: any) => {
+  res.status(200).json({ message: "Auth is success!" });
+});
+
+userRouter.get("/auth/google/failure", (req, res) => {
+  console.log("Auth is failure!");
+  res.status(400).json({ message: "Auth is failure!" });
+});
 
 userRouter.patch(
   "/resetPassword",

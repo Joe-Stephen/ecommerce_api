@@ -4,6 +4,9 @@ import sequelize from "./modules/config/db";
 import dotenv from "dotenv";
 import cors from "cors";
 import morganBody from "morgan-body";
+import passport from "passport";
+import session from "express-session";
+require("./modules/services/passport");
 //swagger imports
 const swaggerUi = require("swagger-ui-express");
 import swaggerOutput from './swagger-output.json';
@@ -27,9 +30,12 @@ const PORT = 3000 || process.env.PORT;
 const app: Application = express();
 //using middlewares
 
+app.use(session({secret:process.env.JWT_SECRET as string, resave:false, saveUninitialized:true, cookie:{secure:false}}));
 app.use(express.json());
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
+app.use(passport.initialize());
+app.use(passport.session());
 
 //hooking morganBody with express app
 morganBody(app);
