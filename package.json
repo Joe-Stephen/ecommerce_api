@@ -21,6 +21,7 @@
     "axios": "^1.6.8",
     "bcrypt": "^5.1.1",
     "cloudmersive-convert-api-client": "^2.8.0",
+    "cluster": "^0.7.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "excel4node": "^1.8.2",
