@@ -32,7 +32,7 @@ import OrderHistory from "./modules/order/orderHistoryModel";
 dotenv.config();
 const PORT = 3000 || process.env.PORT;
 let server!: any;
-
+//clustering
 if (cluster.isMaster) {
   console.log(`Master process ${process.pid} is running`);
   for (let i = 0; i < numCPUs; i++) {
@@ -44,9 +44,7 @@ if (cluster.isMaster) {
   });
 } else {
   const app: Application = express();
-  
   //using middlewares
-  
   app.use(
     session({
       secret: process.env.JWT_SECRET as string,
@@ -60,23 +58,18 @@ if (cluster.isMaster) {
   app.use(express.urlencoded({ extended: true }));
   app.use(passport.initialize());
   app.use(passport.session());
-  
   //hooking morganBody with express app
-  morganBody(app);
-  
+  // morganBody(app);
   // setting routers
   app.use("/", userRouter);
   app.use("/admin", adminRouter);
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerOutput));
-  
   //setting up server connection
   server = app.listen(PORT, () => {
     console.log(`Ecommerce Server is running on http://localhost:${PORT}`);
   });
 }
-
 export const io = new Server(server);
-
 // associations
 //image associations
 Image.belongsTo(Product, { foreignKey: "productId" });
@@ -115,26 +108,21 @@ sequelize
     console.error("Error synchronizing models:", error);
   });
 // setting up web socket connection
-
 // Handle incoming connections
 io.on("connection", (socket) => {
   console.log("Server 1: new web socket connection");
   console.log("Connection id :", socket.id);
-
   socket.emit("message", "Welcome to Server 1.");
   socket.emit(
     "message",
     "Your web socket connection with Server 1 is now active."
   );
-
   socket.on("message", (message) => {
     console.log("Server 1 received message:", message);
   });
-
   socket.on("disconnect", () => {
     console.log("Server 1: web socket connection closed");
   });
-
   socket.on("close", () => {
     console.log("Server 1 is closing the web socket connection");
     socket.emit(

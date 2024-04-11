@@ -13,11 +13,13 @@
   "license": "ISC",
   "dependencies": {
     "@pspdfkit/nodejs": "^0.0.5",
+    "@types/async": "^3.2.24",
     "@types/multer": "^1.4.11",
     "@types/nodemailer": "^6.4.14",
     "@types/otp-generator": "^4.0.2",
     "@types/socket.io": "^3.0.2",
     "@types/socket.io-client": "^3.0.0",
+    "async": "^3.2.5",
     "axios": "^1.6.8",
     "bcrypt": "^5.1.1",
     "cloudmersive-convert-api-client": "^2.8.0",

@@ -8,12 +8,19 @@
     "servers": [
         {
             "url": "http://localhost:3000",
-            "description": "LocalHost server"
+            "description": "LocalHost server - User"
+        },
+        {
+            "url": "http://localhost:3000/admin",
+            "description": "LocalHost server - Admin"
         }
     ],
     "paths": {
         "/notify": {
             "post": {
+                "tags": [
+                    "Admin - Notification Service"
+                ],
                 "description": "",
                 "responses": {
                     "200": {
@@ -45,11 +52,9 @@
                 }
             }
         },
-        "/login": {
+        "/admin-login": {
             "post": {
-                "tags": [
-                    "User"
-                ],
+                "tags": [],
                 "description": "",
                 "responses": {
                     "201": {
@@ -113,6 +118,7 @@
         },
         "/product": {
             "post": {
+                "tags": [],
                 "description": "",
                 "responses": {
                     "200": {
@@ -158,6 +164,7 @@
         },
         "/updateProduct": {
             "post": {
+                "tags": [],
                 "description": "",
                 "parameters": [
                     {
@@ -212,6 +219,9 @@
         },
         "/": {
             "get": {
+                "tags": [
+                    "Admin - User Management"
+                ],
                 "description": "",
                 "responses": {
                     "200": {
@@ -252,6 +262,9 @@
                                     },
                                     "password": {
                                         "example": "any"
+                                    },
+                                    "timeZone": {
+                                        "example": "any"
                                     }
                                 }
                             }
@@ -262,6 +275,9 @@
         },
         "/orders": {
             "get": {
+                "tags": [
+                    "Admin - Order Management"
+                ],
                 "description": "",
                 "parameters": [
                     {
@@ -299,8 +315,43 @@
                 }
             }
         },
+        "/salesReport": {
+            "get": {
+                "tags": [
+                    "Admin - Report"
+                ],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "start",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "end",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/orderStatus": {
             "post": {
+                "tags": [
+                    "Admin - Order Management"
+                ],
                 "description": "",
                 "parameters": [
                     {
@@ -333,6 +384,9 @@
         },
         "/approveOrder": {
             "patch": {
+                "tags": [
+                    "Admin - Order Management"
+                ],
                 "description": "",
                 "parameters": [
                     {
@@ -356,8 +410,11 @@
                 }
             }
         },
-        "/{id}": {
+        "/getUser/{id}": {
             "get": {
+                "tags": [
+                    "Admin - User Management"
+                ],
                 "description": "",
                 "parameters": [
                     {
@@ -380,8 +437,146 @@
                         "description": "Internal Server Error"
                     }
                 }
-            },
+            }
+        },
+        "/toggleStatus": {
+            "patch": {
+                "tags": [
+                    "Admin - User Management"
+                ],
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/notification": {
+            "patch": {
+                "tags": [
+                    "Admin - User Management"
+                ],
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "ids": {
+                                        "example": "any"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/notifyAll": {
+            "post": {
+                "tags": [
+                    "Admin - Notification Service"
+                ],
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "label": {
+                                        "example": "any"
+                                    },
+                                    "content": {
+                                        "example": "any"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/notifySelected": {
+            "post": {
+                "tags": [
+                    "Admin - Notification Service"
+                ],
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "ids": {
+                                        "example": "any"
+                                    },
+                                    "label": {
+                                        "example": "any"
+                                    },
+                                    "content": {
+                                        "example": "any"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/{id}": {
             "delete": {
+                "tags": [
+                    "Admin - User Management"
+                ],
                 "description": "",
                 "parameters": [
                     {
@@ -426,6 +621,9 @@
                     },
                     "400": {
                         "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 },
                 "requestBody": {
@@ -442,6 +640,9 @@
                                     },
                                     "password": {
                                         "example": "any"
+                                    },
+                                    "timeZone": {
+                                        "example": "any"
                                     }
                                 }
                             }
@@ -450,33 +651,11 @@
                 }
             }
         },
-        "/toggleStatus": {
-            "patch": {
-                "description": "",
-                "parameters": [
-                    {
-                        "name": "userId",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
+        "/repeatTask": {
+            "get": {
+                "tags": [
+                    "Admin"
                 ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            }
-        },
-        "/notification": {
-            "patch": {
                 "description": "",
                 "responses": {
                     "200": {
@@ -485,35 +664,37 @@
                     "500": {
                         "description": "Internal Server Error"
                     }
-                },
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "ids": {
-                                        "example": "any"
-                                    }
-                                }
-                            }
-                        }
+                }
+            }
+        },
+        "/testMailAutomation": {
+            "get": {
+                "tags": [
+                    "Admin"
+                ],
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 }
             }
         },
-        "/notifyAll": {
+        "/login": {
             "post": {
+                "tags": [
+                    "User"
+                ],
                 "description": "",
                 "responses": {
-                    "200": {
-                        "description": "OK"
+                    "201": {
+                        "description": "Created"
                     },
                     "400": {
                         "description": "Bad Request"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
                     }
                 },
                 "requestBody": {
@@ -522,46 +703,10 @@
                             "schema": {
                                 "type": "object",
                                 "properties": {
-                                    "label": {
+                                    "email": {
                                         "example": "any"
                                     },
-                                    "content": {
-                                        "example": "any"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/notifySelected": {
-            "post": {
-                "description": "",
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                },
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "ids": {
-                                        "example": "any"
-                                    },
-                                    "label": {
-                                        "example": "any"
-                                    },
-                                    "content": {
+                                    "password": {
                                         "example": "any"
                                     }
                                 }
@@ -636,6 +781,65 @@
                                 }
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/auth/googleLoign": {
+            "get": {
+                "tags": [
+                    "User - Google Sign-in page"
+                ],
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/auth/google": {
+            "get": {
+                "tags": [
+                    "User - Google Sign-in page"
+                ],
+                "description": "",
+                "responses": {
+                    "default": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/auth/google/callback": {
+            "get": {
+                "tags": [
+                    "User - Google Sign-in page"
+                ],
+                "description": "",
+                "responses": {
+                    "default": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/auth/google/success": {
+            "get": {
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/auth/google/failure": {
+            "get": {
+                "description": "",
+                "responses": {
+                    "400": {
+                        "description": "Bad Request"
                     }
                 }
             }
@@ -1003,6 +1207,25 @@
                         }
                     }
                 ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/moment": {
+            "get": {
+                "tags": [
+                    "User - Test Routes"
+                ],
+                "description": "",
                 "responses": {
                     "200": {
                         "description": "OK"

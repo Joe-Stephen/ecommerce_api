@@ -19,6 +19,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const sequelize_1 = require("sequelize");
 const redis_1 = __importDefault(require("../config/redis"));
 const moment_timezone_1 = __importDefault(require("moment-timezone"));
+const async_1 = __importDefault(require("async"));
 //importing services
 const sendMail_1 = require("../services/sendMail");
 const notify_1 = require("../services/notify");
@@ -61,7 +62,7 @@ const loginAdmin = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         }
         else {
             console.log("Incorrect password.");
-            return res.status(201).json({ message: "Incorrect password.l" });
+            return res.status(201).json({ message: "Incorrect password" });
         }
     }
     catch (error) {
@@ -203,16 +204,22 @@ const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, func
                     message: "Selling price shouldn't be greater than regular price.",
                 });
             }
+            let newProduct;
             //updating the product
-            const newProduct = dbQueries.updateProduct(formData, parseInt(productId, 10));
+            const creatingNewProduct = () => __awaiter(void 0, void 0, void 0, function* () {
+                newProduct = yield dbQueries.updateProduct(formData, parseInt(productId, 10));
+            });
             //clearing existing images
-            const result = yield dbQueries.clearExistingImages(parseInt(productId, 10));
-            if (!result) {
-                console.log("An error happened while clearing old product images.");
-                return res.status(400).json({
-                    message: "An error happened while clearing old product images.",
-                });
-            }
+            const clearOldImages = () => __awaiter(void 0, void 0, void 0, function* () {
+                const result = yield dbQueries.clearExistingImages(parseInt(productId, 10));
+                if (!result) {
+                    console.log("An error happened while clearing old product images.");
+                    return res.status(400).json({
+                        message: "An error happened while clearing old product images.",
+                    });
+                }
+            });
+            async_1.default.parallel([creatingNewProduct, clearOldImages]);
             //uploading image files
             const promises = (_b = req.files) === null || _b === void 0 ? void 0 : _b.map((file) => __awaiter(void 0, void 0, void 0, function* () {
                 yield dbQueries.saveProductImages(parseInt(productId, 10), file);
@@ -366,7 +373,7 @@ const getAllOrders = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         const formattedOrders = allOrders.map((order) => {
             return Object.assign({}, order.toJSON());
         });
-        formattedOrders.forEach((order) => {
+        const promises = formattedOrders.map((order) => {
             order.orderDate = (0, moment_timezone_1.default)(order.orderDate).format("YYYY-MM-DD");
             order.createdAt = (0, moment_timezone_1.default)(order.createdAt).format("YYYY-MM-DD");
             order.updatedAt = (0, moment_timezone_1.default)(order.updatedAt).format("YYYY-MM-DD");
@@ -375,9 +382,19 @@ const getAllOrders = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
                 product.updatedAt = (0, moment_timezone_1.default)(product.updatedAt).format("YYYY-MM-DD");
             });
         });
-        return res
-            .status(200)
-            .json({ message: "Fetched all orders.", data: formattedOrders });
+        if (promises) {
+            yield Promise.all(promises);
+            return res
+                .status(200)
+                .json({ message: "Fetched all orders.", data: formattedOrders });
+        }
+        else {
+            return res
+                .status(500)
+                .json({
+                message: "Unexpected error occurred while formatting order dates.",
+            });
+        }
     }
     catch (error) {
         console.error("Error fetching all orders. :", error);
@@ -768,7 +785,9 @@ const assignCronJob = (req, res, next) => __awaiter(void 0, void 0, void 0, func
     try {
         const task = () => console.log("Date : ", new Date().toLocaleString());
         (0, cronService_1.cronJob)(task);
-        return res.status(200).json({ message: "The repeating task has been started." });
+        return res
+            .status(200)
+            .json({ message: "The repeating task has been started." });
     }
     catch (error) {
         console.error("Error in cronJob function.", error);
@@ -901,7 +920,9 @@ const mailAutomation = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         html += html_header + html_body + html_content + html_footer;
         const task = () => __awaiter(void 0, void 0, void 0, function* () { return yield (0, sendMail_1.sendMail)(email, subject, text, html); });
         (0, cronService_1.cronJob)(task);
-        return res.status(200).json({ message: "Mail automation cron job has been started." });
+        return res
+            .status(200)
+            .json({ message: "Mail automation cron job has been started." });
     }
     catch (error) {
         console.error("Error in mail automation function.", error);

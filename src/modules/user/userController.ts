@@ -21,9 +21,13 @@ const dbQueries = new DBQueries();
 //google Auth with passport
 export const serveGoogleSignPage: RequestHandler = async (req, res, next) => {
   try {
-res.send('<a href="/auth/google">Authenticate with Google</a>')
+    res.send('<a href="/auth/google">Authenticate with Google</a>');
   } catch (error) {
-    res.send({ success: false, message: "Error sending Google sign-in page!", error });
+    res.send({
+      success: false,
+      message: "Error sending Google sign-in page!",
+      error,
+    });
   }
 };
 

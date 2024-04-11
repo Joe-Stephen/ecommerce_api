@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+          <html lang="en">
+            <head>
+              <meta charset="UTF-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+              <title>Order Details</title>
+              <!-- <link rel="stylesheet" href="demo.css" /> -->
+              <style>
+                body {
+                  font-family: Arial, sans-serif;
+                  line-height: 1;
+                  background-image: url(./public/images/plant.jpg);
+                  background-size: cover;
+                  background-repeat: no-repeat;
+                  overflow: hidden;
+                }
+          
+                .parent-container {
+                  display: grid;
+                  justify-content: center;
+                  align-items: center;
+                }
+          
+                .container {
+                  max-width: 600px;
+                  margin: 20 auto;
+                  padding: 20px;
+                  background-color: #ffffffac;
+                  border-radius: 5px;
+                  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                }
+          
+                .heading-1 {
+                  color: #000000;
+                  font-size: 4rem;
+                }
+          
+                h1 {
+                  color: #00765c;
+                  text-align: center;
+                }
+          
+                .order-details {
+                  margin-bottom: 20px;
+                }
+          
+                .products {
+                  margin-left: 20px;
+                }
+          
+                .product {
+                  margin-bottom: 10px;
+                }
+          
+                /* table styles */
+          
+                table {
+                  border: 2px black solid;
+                  border-collapse: collapse;
+                }
+          
+                thead {
+                  background-color: #08a953;
+                }
+          
+                td,
+                th {
+                  padding: 8px;
+                  text-align: left;
+                  border-bottom: 1px black solid;
+                  padding: 8px 10px;
+                }
+                tr {
+                  background-color: rgba(245, 245, 220, 0.641);
+                }
+                tr:hover {
+                  background-color: aqua;
+                }
+                td:last-of-type {
+                  text-align: center;
+                }
+              </style>
+            </head>
+            <body>
+              <div><h1 class="heading-1">Ecommerce</h1></div>
+              <div class="parent-container">
+                <p><strong>Order id:</strong> ${order.id}</p>
+                <p>
+                  <strong>Order date:</strong> ${moment(order.orderDate)
+                    .tz(`${user.timeZone}`)
+                    .format("DD-MM-YYYY")}
+                </p>
+                <p>
+                  <strong>Expected delivery date:</strong> ${moment(
+                    order.expectedDeliveryDate
+                  )
+                    .tz(`${user.timeZone}`)
+                    .format("DD-MM-YYYY")}
+                </p>
+                <p><strong>Expected delivery duration:</strong> ${duration} days</p>
+                <table>
+                  <caption>
+                    <strong>Your order has been approved by admin.</strong>
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope="row">No.</th>
+                      <th scope="row">Name</th>
+                      <th scope="row">Price</th>
+                      <th scope="row">Quantity(Nos)</th>
+                      <th scope="row">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th scope="row" colspan="4">Order Total</th>
+                    <td>₹${order.totalAmount}/-</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </body>
+        </html>

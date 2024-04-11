@@ -62,7 +62,7 @@ class DBQueries {
     findAllUsers() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const users = yield userModel_1.default.findAll();
+                const users = yield userModel_1.default.findAll({ limit: 3 });
                 return users;
             }
             catch (error) {

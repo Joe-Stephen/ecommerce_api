@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { Op } from "sequelize";
 import redis from "../config/redis";
 import moment from "moment-timezone";
+import async from "async";
 
 //importing services
 import { sendMail } from "../services/sendMail";
@@ -57,7 +58,7 @@ export const loginAdmin: RequestHandler = async (req, res, next) => {
         .json({ message: "Logged in as admin.", data: loggedInUser });
     } else {
       console.log("Incorrect password.");
-      return res.status(201).json({ message: "Incorrect password.l" });
+      return res.status(201).json({ message: "Incorrect password" });
     }
   } catch (error) {
     console.error("Error in login function :", error);
@@ -77,7 +78,6 @@ export const addProduct: RequestHandler = async (req, res, next) => {
   try {
     const { name, brand, description, category, regular_price, selling_price } =
       req.body;
-
     if (
       !name ||
       !brand ||
@@ -139,7 +139,6 @@ export const addProduct: RequestHandler = async (req, res, next) => {
         images.push(file.originalname);
       }
     );
-
     const finalProduct = { ...newProduct.toJSON(), images };
     //setting in redis
     await redis.set(`product_${newProduct.id}`, JSON.stringify(finalProduct));
@@ -213,21 +212,30 @@ export const updateProduct: RequestHandler = async (req, res, next) => {
           message: "Selling price shouldn't be greater than regular price.",
         });
       }
+      let newProduct!: any;
       //updating the product
-      const newProduct = dbQueries.updateProduct(
-        formData,
-        parseInt(productId, 10)
-      );
+      const creatingNewProduct = async () => {
+        newProduct = await dbQueries.updateProduct(
+          formData,
+          parseInt(productId, 10)
+        );
+      };
+
       //clearing existing images
-      const result: boolean = await dbQueries.clearExistingImages(
-        parseInt(productId, 10)
-      );
-      if (!result) {
-        console.log("An error happened while clearing old product images.");
-        return res.status(400).json({
-          message: "An error happened while clearing old product images.",
-        });
-      }
+      const clearOldImages = async () => {
+        const result: boolean = await dbQueries.clearExistingImages(
+          parseInt(productId, 10)
+        );
+        if (!result) {
+          console.log("An error happened while clearing old product images.");
+          return res.status(400).json({
+            message: "An error happened while clearing old product images.",
+          });
+        }
+      };
+
+      async.parallel([creatingNewProduct, clearOldImages]);
+
       //uploading image files
       const promises = (req.files as File[] | undefined)?.map(
         async (file: any) => {
@@ -379,7 +387,7 @@ export const getAllOrders: RequestHandler = async (req, res, next) => {
     const formattedOrders: Object[] = allOrders.map((order: any) => {
       return { ...order.toJSON() };
     });
-    formattedOrders.forEach((order: any) => {
+    const promises: any = formattedOrders.map((order: any) => {
       order.orderDate = moment(order.orderDate).format("YYYY-MM-DD");
       order.createdAt = moment(order.createdAt).format("YYYY-MM-DD");
       order.updatedAt = moment(order.updatedAt).format("YYYY-MM-DD");
@@ -388,9 +396,16 @@ export const getAllOrders: RequestHandler = async (req, res, next) => {
         product.updatedAt = moment(product.updatedAt).format("YYYY-MM-DD");
       });
     });
-    return res
-      .status(200)
-      .json({ message: "Fetched all orders.", data: formattedOrders });
+    if (promises) {
+      await Promise.all(promises);
+      return res
+        .status(200)
+        .json({ message: "Fetched all orders.", data: formattedOrders });
+    } else {
+      return res.status(500).json({
+        message: "Unexpected error occurred while formatting order dates.",
+      });
+    }
   } catch (error) {
     console.error("Error fetching all orders. :", error);
     res.status(500).send("Error fetching all orders. ");
@@ -778,27 +793,29 @@ export const salesReport: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const assignCronJob:RequestHandler=async(req, res, next)=>{
+export const assignCronJob: RequestHandler = async (req, res, next) => {
   try {
-    const task=()=>console.log("Date : ", new Date().toLocaleString());    
-    cronJob(task)
-    return res.status(200).json({message:"The repeating task has been started."});    
+    const task = () => console.log("Date : ", new Date().toLocaleString());
+    cronJob(task);
+    return res
+      .status(200)
+      .json({ message: "The repeating task has been started." });
   } catch (error) {
     console.error("Error in cronJob function.", error);
-    return res.status(500).json({ message: "Internal server error." });    
+    return res.status(500).json({ message: "Internal server error." });
   }
-}
+};
 
-export const mailAutomation:RequestHandler=async(req, res, next)=>{
+export const mailAutomation: RequestHandler = async (req, res, next) => {
   try {
-     //creating parameters for send mail service
-     const email = "joestephenk10@gmail.com";
-     const subject = "Mail automation test.";
-     const text = `This is just a test mail from admin.`;
+    //creating parameters for send mail service
+    const email = "joestephenk10@gmail.com";
+    const subject = "Mail automation test.";
+    const text = `This is just a test mail from admin.`;
 
-     //generating dynamic html
-     let html = ``;
-     let html_header = `<!DOCTYPE html>
+    //generating dynamic html
+    let html = ``;
+    let html_header = `<!DOCTYPE html>
      <html lang="en">
        <head>
          <meta charset="UTF-8" />
@@ -884,7 +901,7 @@ export const mailAutomation:RequestHandler=async(req, res, next)=>{
        <body>
          <div><h1 class="heading-1">Ecommerce</h1></div>
          <div class="parent-container">`;
-     let html_body = `<table>
+    let html_body = `<table>
              <caption>
                <strong>Your order has been approved by admin.</strong>
              </caption>
@@ -899,8 +916,8 @@ export const mailAutomation:RequestHandler=async(req, res, next)=>{
              </thead>
              <tbody>
              `;
-     let html_content = `<h1>Mail automation</h1>`;
-     let html_footer = `</tbody>
+    let html_content = `<h1>Mail automation</h1>`;
+    let html_footer = `</tbody>
              <tfoot>
                <tr>
                  <th scope="row" colspan="4">Order Total</th>
@@ -913,13 +930,15 @@ export const mailAutomation:RequestHandler=async(req, res, next)=>{
      </html>
      `;
 
-     html += html_header + html_body + html_content + html_footer;
-     
-    const task=async()=>await sendMail(email, subject, text, html);    
-    cronJob(task)
-    return res.status(200).json({message:"Mail automation cron job has been started."});    
+    html += html_header + html_body + html_content + html_footer;
+
+    const task = async () => await sendMail(email, subject, text, html);
+    cronJob(task);
+    return res
+      .status(200)
+      .json({ message: "Mail automation cron job has been started." });
   } catch (error) {
     console.error("Error in mail automation function.", error);
-    return res.status(500).json({ message: "Internal server error." });    
+    return res.status(500).json({ message: "Internal server error." });
   }
-}
+};

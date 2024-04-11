@@ -9,8 +9,12 @@ const doc = {
     servers: [
         {
             url: 'http://localhost:3000',
-            description: 'LocalHost server'
+            description: 'LocalHost server - User'
         },
+        {
+            url: 'http://localhost:3000/admin',
+            description: 'LocalHost server - Admin'
+        }
     ],
     components: {
         securitySchemes: {

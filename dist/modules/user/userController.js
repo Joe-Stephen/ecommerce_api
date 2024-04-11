@@ -30,7 +30,11 @@ const serveGoogleSignPage = (req, res, next) => __awaiter(void 0, void 0, void 0
         res.send('<a href="/auth/google">Authenticate with Google</a>');
     }
     catch (error) {
-        res.send({ success: false, message: "Error sending Google sign-in page!", error });
+        res.send({
+            success: false,
+            message: "Error sending Google sign-in page!",
+            error,
+        });
     }
 });
 exports.serveGoogleSignPage = serveGoogleSignPage;
