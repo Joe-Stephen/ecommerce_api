@@ -9,6 +9,9 @@ import CartProducts from "../cart/cartProductsModel";
 import DBQueries from "../services/dbQueries";
 const dbQueries = new DBQueries();
 
+//@desc Loading user cart
+//@route GET /cart
+//@access Private
 export const getUserCart: RequestHandler = async (req, res, next) => {
   try {
     const loggedInUser = req.body.user;
@@ -39,6 +42,9 @@ export const getUserCart: RequestHandler = async (req, res, next) => {
   }
 };
 
+//@desc Adding product to cart
+//@route POST /cart
+//@access Private
 export const addToCart: RequestHandler = async (req, res, next) => {
   try {
     const loggedInUser = req.body.user;
@@ -119,6 +125,9 @@ export const addToCart: RequestHandler = async (req, res, next) => {
   }
 };
 
+//@desc Decreasing cart quantity
+//@route PATCH /decreaseCartQuantity
+//@access Private
 export const decreaseCartQuantity: RequestHandler = async (req, res, next) => {
   try {
     const loggedInUser = req.body.user;
@@ -186,6 +195,9 @@ export const decreaseCartQuantity: RequestHandler = async (req, res, next) => {
   }
 };
 
+//@desc Increasing cart quantity
+//@route PATCH /increaseCartQuantity
+//@access Private
 export const increaseCartQuantity: RequestHandler = async (req, res, next) => {
   try {
     const loggedInUser = req.body.user;
@@ -248,6 +260,9 @@ export const increaseCartQuantity: RequestHandler = async (req, res, next) => {
   }
 };
 
+//@desc Deleting a cart product
+//@route DELETE /removeCartItem
+//@access Private
 export const removeCartItem: RequestHandler = async (req, res, next) => {
   try {
     const loggedInUser = req.body.user;

@@ -7,6 +7,9 @@ import Notification from "./notificationModel";
 import DBQueries from "../services/dbQueries";
 const dbQueries = new DBQueries();
 
+//@desc Fetch all notifications of a user
+//@route GET /notifications
+//@access Private
 export const getAllNotifications: RequestHandler = async (req, res) => {
   try {
     const loggedInUser = req.body.user;
@@ -32,6 +35,9 @@ export const getAllNotifications: RequestHandler = async (req, res) => {
   }
 };
 
+//@desc Toggle the read status of a notification
+//@route PATCH /notification
+//@access Private
 export const toggleStatus: RequestHandler = async (req, res) => {
   try {
     const { ids } = req.body;

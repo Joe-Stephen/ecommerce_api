@@ -10,6 +10,9 @@ import DBQueries from "../services/dbQueries";
 import OrderHistory from "./orderHistoryModel";
 const dbQueries = new DBQueries();
 
+//@desc Place order from cart
+//@route POST /checkOut
+//@access Private
 export const checkOut: RequestHandler = async (req, res, next) => {
   try {
     const date = moment();
@@ -103,6 +106,9 @@ export const checkOut: RequestHandler = async (req, res, next) => {
   }
 };
 
+//@desc Cancel an order
+//@route POST /cancelOrder
+//@access Private
 export const cancelOrder: RequestHandler = async (req, res, next) => {
   try {
     const { orderId } = req.query;
@@ -194,6 +200,9 @@ export const cancelOrder: RequestHandler = async (req, res, next) => {
   }
 };
 
+//@desc Edit an order
+//@route PATCH /editOrder
+//@access Private
 export const editOrder: RequestHandler = async (req, res, next) => {
   try {
     const { orderId } = req.query;
@@ -300,6 +309,9 @@ export const editOrder: RequestHandler = async (req, res, next) => {
   }
 };
 
+//@desc See order status
+//@route GET /order
+//@access Private
 export const orderStatus: RequestHandler = async (req, res, next) => {
   try {
     const { orderId } = req.query;
