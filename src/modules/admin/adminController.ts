@@ -26,7 +26,9 @@ import DBQueries from "../services/dbQueries";
 import OrderHistory from "../order/orderHistoryModel";
 const dbQueries = new DBQueries();
 
-//admin login
+//@desc Logging in admin
+//@route POST /admin-login
+//@access Public
 export const loginAdmin: RequestHandler = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -73,7 +75,9 @@ const generateToken = (email: string) => {
   });
 };
 
-//creating new product
+//@desc Creating new product
+//@route POST /product
+//@access Private
 export const addProduct: RequestHandler = async (req, res, next) => {
   try {
     const { name, brand, description, category, regular_price, selling_price } =
@@ -160,6 +164,9 @@ export const addProduct: RequestHandler = async (req, res, next) => {
 };
 
 //updating a product
+//@desc Editing product details
+//@route POST /updateProduct
+//@access Private
 export const updateProduct: RequestHandler = async (req, res, next) => {
   try {
     const { productId } = req.query;
@@ -263,7 +270,9 @@ export const updateProduct: RequestHandler = async (req, res, next) => {
   }
 };
 
-//toggling the user access status (block/unblock)
+//@desc Toggling user access status (block/unblock)
+//@route PATCH /toggleStatus
+//@access Private
 export const toggleUserAccess: RequestHandler = async (req, res, next) => {
   try {
     const { userId } = req.query;
@@ -294,7 +303,9 @@ export const toggleUserAccess: RequestHandler = async (req, res, next) => {
   }
 };
 
-//delete an existing user
+//@desc Deleting a user
+//@route DELETE /:id
+//@access Private
 export const deleteUser: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -327,7 +338,9 @@ export const deleteUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-//get all users
+//@desc Getting all users
+//@route GET /
+//@access Private
 export const getAllUsers: RequestHandler = async (req, res, next) => {
   try {
     const allUsers: User[] | [] | undefined = await dbQueries.findAllUsers();
@@ -344,7 +357,9 @@ export const getAllUsers: RequestHandler = async (req, res, next) => {
   }
 };
 
-//get all orders
+//@desc Get all orders
+//@route GET /orders
+//@access Private
 export const getAllOrders: RequestHandler = async (req, res, next) => {
   try {
     let queryOptions: any = {
@@ -420,7 +435,9 @@ export const getAllOrders: RequestHandler = async (req, res, next) => {
   }
 };
 
-//approving an order
+//@desc Approving an order
+//@route PATCH /approveOrder
+//@access Private
 export const approveOrder: RequestHandler = async (req, res, next) => {
   try {
     //getting user id from request query
@@ -648,7 +665,9 @@ export const approveOrder: RequestHandler = async (req, res, next) => {
   }
 };
 
-//approving an order
+//@desc Update order status
+//@route POST /orderStatus
+//@access Private
 export const updateOrderStatus: RequestHandler = async (req, res, next) => {
   try {
     //getting user id from request query
@@ -683,7 +702,9 @@ export const updateOrderStatus: RequestHandler = async (req, res, next) => {
   }
 };
 
-//get user by id
+//@desc Get user by id
+//@route GET /getUser/:id
+//@access Private
 export const getUserById: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -707,6 +728,9 @@ export const getUserById: RequestHandler = async (req, res, next) => {
   }
 };
 
+//@desc Notifying a user
+//@route POST /notify
+//@access Private
 export const notifyUser: RequestHandler = async (req, res, next) => {
   try {
     const { label, content } = req.body;
@@ -743,6 +767,9 @@ export const notifyUser: RequestHandler = async (req, res, next) => {
   }
 };
 
+//@desc Notifying all users
+//@route POST /notifyAll
+//@access Private
 export const notifyAllUsers: RequestHandler = async (req, res, next) => {
   try {
     const { label, content } = req.body;
@@ -761,6 +788,9 @@ export const notifyAllUsers: RequestHandler = async (req, res, next) => {
   }
 };
 
+//@desc Notifying selected users
+//@route POST /notifySelected
+//@access Private
 export const notifySelectedUsers: RequestHandler = async (req, res, next) => {
   try {
     const { ids, label, content } = req.body;
@@ -779,6 +809,9 @@ export const notifySelectedUsers: RequestHandler = async (req, res, next) => {
   }
 };
 
+//@desc Getting sales report
+//@route GET /salesReport
+//@access Private
 export const salesReport: RequestHandler = async (req, res, next) => {
   try {
     const { start, end } = req.query;
@@ -818,6 +851,9 @@ export const salesReport: RequestHandler = async (req, res, next) => {
   }
 };
 
+//@desc Job automation (cron-job)
+//@route GET /repeatTask
+//@access Private
 export const assignCronJob: RequestHandler = async (req, res, next) => {
   try {
     const task = () => cronJob(task);
@@ -830,6 +866,9 @@ export const assignCronJob: RequestHandler = async (req, res, next) => {
   }
 };
 
+//@desc Mail automation test function
+//@route GET /testMailAutomation
+//@access Private
 export const mailAutomation: RequestHandler = async (req, res, next) => {
   try {
     const { email } = req.query;
@@ -956,7 +995,8 @@ export const mailAutomation: RequestHandler = async (req, res, next) => {
 
     html += html_header + html_body + html_content + html_footer;
 
-    const task = async () => await sendMail(email as string, subject, text, html);
+    const task = async () =>
+      await sendMail(email as string, subject, text, html);
     cronJob(task);
     return res
       .status(200)

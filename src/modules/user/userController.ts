@@ -18,7 +18,9 @@ import DBQueries from "../services/dbQueries";
 import Image from "../product/imageModel";
 const dbQueries = new DBQueries();
 
-//google Auth with passport
+//@desc google Auth with passport
+//@route GET /
+//@access Public
 export const serveGoogleSignPage: RequestHandler = async (req, res, next) => {
   try {
     res.send('<a href="/auth/google">Authenticate with Google</a>');
@@ -160,6 +162,9 @@ export const verifyOtp: RequestHandler = async (req, res, next) => {
   }
 };
 
+//@desc logging in user
+//@route POST /login
+//@access Public
 export const loginUser: RequestHandler = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -208,6 +213,9 @@ export const loginUser: RequestHandler = async (req, res, next) => {
   }
 };
 
+//@desc user getting all products
+//@route GET /products
+//@access Public
 export const getAllProducts: RequestHandler = async (req, res, next) => {
   try {
     //setting type for product object
@@ -341,6 +349,9 @@ const generateToken = (email: string) => {
   });
 };
 
+//@desc user changing password
+//@route PATCH /resetPassword
+//@access Private
 export const resetPassword: RequestHandler = async (req, res, next) => {
   try {
     const { email } = req.body.user;
@@ -376,6 +387,9 @@ export const resetPassword: RequestHandler = async (req, res, next) => {
 };
 
 //get user by id
+//@desc Getting user details by id
+//@route GET /me
+//@access Private
 export const getUserById: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -397,6 +411,9 @@ export const getUserById: RequestHandler = async (req, res, next) => {
   }
 };
 
+//@desc Updating user details
+//@route PUT /:id
+//@access Private
 export const updateUser: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -445,6 +462,9 @@ export const updateUser: RequestHandler = async (req, res, next) => {
 };
 
 //user test functions
+//@desc Test function for user
+//@route GET /moment
+//@access Private
 export const getMyMoment: RequestHandler = async (req, res, next) => {
   try {
     const IndiaToday = moment();
