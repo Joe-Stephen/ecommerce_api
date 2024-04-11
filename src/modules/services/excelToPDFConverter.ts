@@ -1,6 +1,6 @@
 const ExcelJS = require("exceljs");
 const { PDFDocument, StandardFonts } = require("pdf-lib");
-const fs = require("fs");
+import fs from "fs";
 
 export const convertExcelToPDF = async (excelFilePath:string, pdfFilePath:string) => {
   // Loading Excel workbook

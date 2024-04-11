@@ -61,38 +61,41 @@ export const checkOut: RequestHandler = async (req, res, next) => {
     );
     const orderProducts: number[] = [];
     let grandTotal: number = 0;
-    productArray.forEach((product: any) => {
+    const promises1 = productArray.map((product: any) => {
       product.subTotal =
         product.selling_price * product.CartProducts.dataValues.quantity;
       grandTotal += product.subTotal;
       orderProducts.push(product.id);
     });
-    const orderObject: Order | null | undefined = await dbQueries.createOrder(
-      user.id,
-      grandTotal
-    );
-    if (!orderObject) {
-      console.log("Error in creating order.");
-      return res.status(500).json({ message: "Couldn't place the order." });
-    }
-    const promises = productArray.map(async (product: any) => {
-      await dbQueries.createOrderProduct(
-        orderObject.id,
-        product.id,
-        product.selling_price,
-        product.CartProducts.dataValues.quantity
+    if (promises1) {
+      await Promise.all(promises1);
+      const orderObject: Order | null | undefined = await dbQueries.createOrder(
+        user.id,
+        grandTotal
       );
-    });
-    if (promises) {
-      await Promise.all(promises);
-      //removing user cart
-      await dbQueries.destroyCart(user.id);
-      //removing cart products
-      await dbQueries.destroyAllCartProducts(userWithCart.id);
-      return res.status(200).json({
-        message: "Order has been placed.",
-        data: orderObject,
+      if (!orderObject) {
+        console.log("Error in creating order.");
+        return res.status(500).json({ message: "Couldn't place the order." });
+      }
+      const promises2 = productArray.map(async (product: any) => {
+        await dbQueries.createOrderProduct(
+          orderObject.id,
+          product.id,
+          product.selling_price,
+          product.CartProducts.dataValues.quantity
+        );
       });
+      if (promises2) {
+        await Promise.all(promises2);
+        //removing user cart
+        dbQueries.destroyCart(user.id);
+        //removing cart products
+        dbQueries.destroyAllCartProducts(userWithCart.id);
+        return res.status(200).json({
+          message: "Order has been placed.",
+          data: orderObject,
+        });
+      }
     }
   } catch (error) {
     console.error("Error in checkout function :", error);
@@ -125,6 +128,11 @@ export const cancelOrder: RequestHandler = async (req, res, next) => {
           parseInt(orderId),
           reason
         );
+        if (cancelRequest !== true) {
+          return res.status(500).json({
+            message: "Error happened while creating your cancel request.",
+          });
+        }
         order.orderStatus = "Cancelled";
         await order.save();
         console.log("Cancel request has been submitted.");
@@ -310,7 +318,7 @@ export const orderStatus: RequestHandler = async (req, res, next) => {
           .json({ message: "No order found with this id." });
       }
       const orderHistory: any = await dbQueries.findOrderHistory(order.id);
-      orderHistory?.forEach((history: any) => {
+      const promises = orderHistory?.forEach((history: any) => {
         history.createdAt = moment(history.createdAt)
           .tz(`${req.body.user.timeZone}`)
           .format();
@@ -318,10 +326,19 @@ export const orderStatus: RequestHandler = async (req, res, next) => {
           .tz(`${req.body.user.timeZone}`)
           .format();
       });
-      return res.status(200).json({
-        message: "Order history has been fetched.",
-        data: orderHistory,
-      });
+      if (promises) {
+        await Promise.all(promises);
+        return res.status(200).json({
+          message: "Order history has been fetched.",
+          data: orderHistory,
+        });
+      }
+      return res
+        .status(500)
+        .json({
+          message:
+            "Error happended in the orderStatus function's date formatting section.",
+        });
     }
   } catch (error) {
     console.error("An error in edit orderStatus function :", error);

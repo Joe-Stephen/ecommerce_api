@@ -1,9 +1,13 @@
 import otpGenerator from "otp-generator";
 
 export const generateOtp = () => {
-  const otp = otpGenerator.generate(6, {
-    upperCaseAlphabets: false,
-    specialChars: false,
-  });
-  return otp;
+  try {
+    const otp = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      specialChars: false,
+    });
+    return otp;
+  } catch (error) {
+    console.error("Error while generating otp : ", error);
+  }
 };

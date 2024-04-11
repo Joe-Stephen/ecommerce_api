@@ -275,7 +275,6 @@ export const removeCartItem: RequestHandler = async (req, res, next) => {
           .status(400)
           .json({ message: "No user found. User is not logged in." });
       }
-
       //finding user cart
       let userCart: Cart | null | undefined = await dbQueries.findCartByUserId(
         user.id

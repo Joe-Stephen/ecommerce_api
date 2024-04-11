@@ -1,6 +1,6 @@
 import { Router } from "express";
 import passport from "passport";
-require("../services/passport")
+require("../services/passport");
 const userRouter = Router();
 
 //user functions

@@ -161,7 +161,6 @@ exports.addProduct = addProduct;
 const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _b;
     try {
-        console.log("Called me!");
         const { productId } = req.query;
         if (!productId) {
             console.log("Please provide the productId.");
@@ -205,17 +204,13 @@ const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, func
                     message: "Selling price shouldn't be greater than regular price.",
                 });
             }
-            console.log("The form data : ", formData);
             let newProduct;
             //updating the product
             const creatingNewProduct = () => __awaiter(void 0, void 0, void 0, function* () {
-                console.log("Called creatingNewProduct!");
                 newProduct = yield dbQueries.updateProduct(formData, parseInt(productId, 10));
-                console.log("completed creatingNewProduct!");
             });
             //clearing existing images
             const clearOldImages = () => __awaiter(void 0, void 0, void 0, function* () {
-                console.log("Called clearOldImages!");
                 const result = yield dbQueries.clearExistingImages(parseInt(productId, 10));
                 if (!result) {
                     console.log("An error happened while clearing old product images.");
@@ -223,7 +218,6 @@ const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, func
                         message: "An error happened while clearing old product images.",
                     });
                 }
-                console.log("completed clearOldImages!");
             });
             async_1.default.parallel([creatingNewProduct, clearOldImages], (err, results) => {
                 if (err) {
@@ -702,8 +696,19 @@ const notifyUser = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                 .status(400)
                 .json({ message: "Please provide all the fields." });
         }
-        yield dbQueries.createNotificationForOne(2, label, content);
-        index_1.io.emit("notifyClient", label + " " + content);
+        const createNotification = () => __awaiter(void 0, void 0, void 0, function* () {
+            yield dbQueries.createNotificationForOne(2, label, content);
+        });
+        const createSocketMessage = () => {
+            index_1.io.emit("notifyClient", label + " " + content);
+        };
+        async_1.default.parallel([createNotification, createSocketMessage], (err, results) => {
+            if (err) {
+                console.error("An error in notifyUser's (async.parallel) block :", err);
+            }
+            console.log("All functions were excecuted parallelly.");
+            console.log("The results are : ", results);
+        });
         console.log("The user has been notified.");
         return res.status(200).json({ message: "The user has been notified." });
     }
@@ -718,15 +723,17 @@ const notifyAllUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         const { label, content } = req.body;
         if (!label || !content) {
             console.log("No label or content found in the request body.");
-            res.status(400).json({ message: "Please provide all the fields." });
+            return res
+                .status(400)
+                .json({ message: "Please provide all the fields." });
         }
         yield (0, notify_1.notifyAll)(label, content);
         console.log("All users have been notified.");
-        res.status(200).json({ message: "All users have been notified." });
+        return res.status(200).json({ message: "All users have been notified." });
     }
     catch (error) {
         console.error("Error in notifyAllUsers function.", error);
-        res.status(500).json({ message: "Internal server error." });
+        return res.status(500).json({ message: "Internal server error." });
     }
 });
 exports.notifyAllUsers = notifyAllUsers;
@@ -752,7 +759,6 @@ exports.notifySelectedUsers = notifySelectedUsers;
 const salesReport = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { start, end } = req.query;
-        console.log(start);
         let report;
         if (start !== undefined && end !== undefined && start === end) {
             const newDate = new Date(start);
@@ -793,8 +799,7 @@ const salesReport = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
 exports.salesReport = salesReport;
 const assignCronJob = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const task = () => console.log("Date : ", new Date().toLocaleString());
-        (0, cronService_1.cronJob)(task);
+        const task = () => (0, cronService_1.cronJob)(task);
         return res
             .status(200)
             .json({ message: "The repeating task has been started." });
@@ -807,8 +812,8 @@ const assignCronJob = (req, res, next) => __awaiter(void 0, void 0, void 0, func
 exports.assignCronJob = assignCronJob;
 const mailAutomation = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const { email } = req.query;
         //creating parameters for send mail service
-        const email = "joestephenk10@gmail.com";
         const subject = "Mail automation test.";
         const text = `This is just a test mail from admin.`;
         //generating dynamic html

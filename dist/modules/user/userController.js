@@ -42,35 +42,58 @@ exports.serveGoogleSignPage = serveGoogleSignPage;
 //@route POST /
 //@access Public
 const createUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { username, email, password, timeZone } = req.body;
-    if (!username || !email || !password) {
-        console.log("Please provide all the details.");
-        return res.status(400).json({ message: "Please provide all the details." });
+    try {
+        const { username, email, password, timeZone } = req.body;
+        if (!username || !email || !password) {
+            console.log("Please provide all the details.");
+            return res
+                .status(400)
+                .json({ message: "Please provide all the details." });
+        }
+        //checking for existing user
+        const existingUser = yield dbQueries.findUserByEmail(email);
+        if (existingUser) {
+            console.log("This email is already registered.");
+            return res
+                .status(400)
+                .json({ message: "This email is already registered." });
+        }
+        //hashing password
+        yield bcrypt_1.default
+            .genSalt(10)
+            .then((salt) => __awaiter(void 0, void 0, void 0, function* () {
+            return bcrypt_1.default.hash(password, salt);
+        }))
+            .then((hash) => __awaiter(void 0, void 0, void 0, function* () {
+            //updating password and saving document
+            const hashedPassword = hash;
+            //user creation
+            const user = yield dbQueries.createUser(username, email, hashedPassword, timeZone);
+            if (!user) {
+                console.log("Error in the create user function.");
+                return res
+                    .status(500)
+                    .json({ message: "Error in the create user function." });
+            }
+            //setting user login details in redis
+            yield redis_1.default.set(email, hashedPassword);
+            return res
+                .status(200)
+                .json({ message: "User created successfully", data: user });
+        }))
+            .catch((err) => {
+            console.log("Error in createUser's password hash section : ", err.message);
+            return res
+                .status(500)
+                .json({ message: "Error happened in hashing the password." });
+        });
     }
-    //checking for existing user
-    const existingUser = yield dbQueries.findUserByEmail(email);
-    if (existingUser) {
-        console.log("This email is already registered.");
-        return res
-            .status(400)
-            .json({ message: "This email is already registered." });
+    catch (error) {
+        console.error("Error in createUser function :", error);
+        return res.status(500).json({
+            message: "Unexpected error happened while creating your account.",
+        });
     }
-    //hashing password
-    const salt = yield bcrypt_1.default.genSalt(10);
-    const hashedPassword = yield bcrypt_1.default.hash(password, salt);
-    //user creation
-    const user = yield dbQueries.createUser(username, email, hashedPassword, timeZone);
-    if (!user) {
-        console.log("Error in the create user function.");
-        return res
-            .status(500)
-            .json({ message: "Error in the create user function." });
-    }
-    //setting user login details in redis
-    redis_1.default.set(email, hashedPassword);
-    return res
-        .status(200)
-        .json({ message: "User created successfully", data: user });
 });
 exports.createUser = createUser;
 //@desc sending otp for email verification
@@ -127,7 +150,7 @@ const verifyOtp = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                 .json({ message: "No document found with this email." });
         }
         if (otpAttempt === existingDoc.otp) {
-            dbQueries.destroyVerificationByEmail(email);
+            yield dbQueries.destroyVerificationByEmail(email);
             return res.status(200).json({ message: "Mail verified successfully." });
         }
         return res.status(400).json({ message: "Incorrect otp." });
@@ -149,7 +172,6 @@ const loginUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                 .status(400)
                 .json({ message: "Please provide all the details." });
         }
-        console.log("The email :", email);
         // const user: User | null | undefined = await dbQueries.findUserByEmail(
         //   email
         // );
@@ -250,11 +272,9 @@ const getAllProducts = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                             //searching
                             if (searchKey) {
                                 allRedisProducts = allRedisProducts.filter((product) => product.name.includes(searchKey));
-                                console.log("The search products :", allRedisProducts);
                             }
                             //pagination
                             const paginated = allRedisProducts.slice(parseInt(page) * count, parseInt(page) * count + count);
-                            console.log("pagination applied :", paginated);
                             //sorting
                             if (sortType && sortType === "DESC") {
                                 paginated.sort((a, b) => b.selling_price - a.selling_price);
@@ -309,12 +329,20 @@ const resetPassword = (req, res, next) => __awaiter(void 0, void 0, void 0, func
                 .json({ message: "No user found with this email!" });
         }
         //hashing password
-        const salt = yield bcrypt_1.default.genSalt(10);
-        const hashedPassword = yield bcrypt_1.default.hash(password, salt);
-        //updating password and saving document
-        user.password = hashedPassword;
-        yield user.save();
-        return res.status(200).json({ message: "Password changed successfully." });
+        yield bcrypt_1.default
+            .genSalt(10)
+            .then((salt) => __awaiter(void 0, void 0, void 0, function* () {
+            return bcrypt_1.default.hash(password, salt);
+        }))
+            .then((hash) => __awaiter(void 0, void 0, void 0, function* () {
+            //updating password and saving document
+            user.password = hash;
+            yield user.save();
+            return res
+                .status(200)
+                .json({ message: "Password changed successfully." });
+        }))
+            .catch((err) => console.error("Error in resetPassword : ", err.message));
     }
     catch (error) {
         console.error("Error changing password :", error);
@@ -331,7 +359,6 @@ const getUserById = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
             return res.status(400).json({ message: "Please provide a user id." });
         }
         if (typeof id === "string") {
-            const userToDelete = yield dbQueries.findUserById(parseInt(id, 10));
             const user = yield dbQueries.findUserById(parseInt(id, 10));
             return res
                 .status(200)
@@ -362,13 +389,20 @@ const updateUser = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                     .json({ message: "A product with this name already exists." });
             }
             //hashing password
-            const salt = yield bcrypt_1.default.genSalt(10);
-            const hashedPassword = yield bcrypt_1.default.hash(password, salt);
-            yield dbQueries.updateUserById(parseInt(id), username, email, hashedPassword, timeZone);
-            const updatedUser = yield dbQueries.findUserById(parseInt(id, 10));
-            return res
-                .status(200)
-                .json({ message: "User updated successfully.", data: updatedUser });
+            yield bcrypt_1.default
+                .genSalt(10)
+                .then((salt) => __awaiter(void 0, void 0, void 0, function* () {
+                return bcrypt_1.default.hash(password, salt);
+            }))
+                .then((hash) => __awaiter(void 0, void 0, void 0, function* () {
+                //updating password and saving document
+                yield dbQueries.updateUserById(parseInt(id), username, email, hash, timeZone);
+                const updatedUser = yield dbQueries.findUserById(parseInt(id, 10));
+                return res
+                    .status(200)
+                    .json({ message: "User updated successfully.", data: updatedUser });
+            }))
+                .catch((err) => console.error("Error in updateUser : ", err.message));
         }
     }
     catch (error) {

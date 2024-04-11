@@ -18,9 +18,7 @@
   "paths": {
     "/notify": {
       "post": {
-        "tags": [
-          "Admin - Notification Service"
-        ],
+        "tags": ["Admin - Notification Service"],
         "description": "",
         "responses": {
           "200": {
@@ -85,9 +83,7 @@
     },
     "/resetPassword": {
       "patch": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "description": "",
         "responses": {
           "200": {
@@ -219,9 +215,7 @@
     },
     "/": {
       "get": {
-        "tags": [
-          "Admin - User Management"
-        ],
+        "tags": ["Admin - User Management"],
         "description": "",
         "responses": {
           "200": {
@@ -233,9 +227,7 @@
         }
       },
       "post": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "description": "",
         "responses": {
           "200": {
@@ -275,9 +267,7 @@
     },
     "/orders": {
       "get": {
-        "tags": [
-          "Admin - Order Management"
-        ],
+        "tags": ["Admin - Order Management"],
         "description": "",
         "parameters": [
           {
@@ -317,9 +307,7 @@
     },
     "/salesReport": {
       "get": {
-        "tags": [
-          "Admin - Report"
-        ],
+        "tags": ["Admin - Report"],
         "description": "",
         "parameters": [
           {
@@ -349,9 +337,7 @@
     },
     "/orderStatus": {
       "post": {
-        "tags": [
-          "Admin - Order Management"
-        ],
+        "tags": ["Admin - Order Management"],
         "description": "",
         "parameters": [
           {
@@ -384,9 +370,7 @@
     },
     "/approveOrder": {
       "patch": {
-        "tags": [
-          "Admin - Order Management"
-        ],
+        "tags": ["Admin - Order Management"],
         "description": "",
         "parameters": [
           {
@@ -412,9 +396,7 @@
     },
     "/getUser/{id}": {
       "get": {
-        "tags": [
-          "Admin - User Management"
-        ],
+        "tags": ["Admin - User Management"],
         "description": "",
         "parameters": [
           {
@@ -441,9 +423,7 @@
     },
     "/toggleStatus": {
       "patch": {
-        "tags": [
-          "Admin - User Management"
-        ],
+        "tags": ["Admin - User Management"],
         "description": "",
         "parameters": [
           {
@@ -469,9 +449,7 @@
     },
     "/notification": {
       "patch": {
-        "tags": [
-          "Admin - User Management"
-        ],
+        "tags": ["Admin - User Management"],
         "description": "",
         "responses": {
           "200": {
@@ -499,9 +477,7 @@
     },
     "/notifyAll": {
       "post": {
-        "tags": [
-          "Admin - Notification Service"
-        ],
+        "tags": ["Admin - Notification Service"],
         "description": "",
         "responses": {
           "200": {
@@ -535,9 +511,7 @@
     },
     "/notifySelected": {
       "post": {
-        "tags": [
-          "Admin - Notification Service"
-        ],
+        "tags": ["Admin - Notification Service"],
         "description": "",
         "responses": {
           "200": {
@@ -574,9 +548,7 @@
     },
     "/{id}": {
       "delete": {
-        "tags": [
-          "Admin - User Management"
-        ],
+        "tags": ["Admin - User Management"],
         "description": "",
         "parameters": [
           {
@@ -601,9 +573,7 @@
         }
       },
       "put": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "description": "",
         "parameters": [
           {
@@ -653,9 +623,7 @@
     },
     "/repeatTask": {
       "get": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "description": "",
         "responses": {
           "200": {
@@ -669,9 +637,7 @@
     },
     "/testMailAutomation": {
       "get": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "description": "",
         "responses": {
           "200": {
@@ -685,9 +651,7 @@
     },
     "/login": {
       "post": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "description": "",
         "responses": {
           "201": {
@@ -718,9 +682,7 @@
     },
     "/sendOtp": {
       "post": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "description": "",
         "responses": {
           "201": {
@@ -751,9 +713,7 @@
     },
     "/verifyEmail": {
       "post": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "description": "",
         "responses": {
           "200": {
@@ -787,9 +747,7 @@
     },
     "/auth/googleLoign": {
       "get": {
-        "tags": [
-          "User - Google Sign-in page"
-        ],
+        "tags": ["User - Google Sign-in page"],
         "description": "",
         "responses": {
           "200": {
@@ -800,9 +758,7 @@
     },
     "/auth/google": {
       "get": {
-        "tags": [
-          "User - Google Sign-in page"
-        ],
+        "tags": ["User - Google Sign-in page"],
         "description": "",
         "responses": {
           "default": {
@@ -813,9 +769,7 @@
     },
     "/auth/google/callback": {
       "get": {
-        "tags": [
-          "User - Google Sign-in page"
-        ],
+        "tags": ["User - Google Sign-in page"],
         "description": "",
         "responses": {
           "default": {
@@ -846,9 +800,7 @@
     },
     "/products": {
       "get": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "description": "",
         "parameters": [
           {
@@ -885,9 +837,7 @@
     },
     "/notifications": {
       "get": {
-        "tags": [
-          "User - Notifications"
-        ],
+        "tags": ["User - Notifications"],
         "description": "",
         "responses": {
           "200": {
@@ -904,9 +854,7 @@
     },
     "/cart": {
       "get": {
-        "tags": [
-          "User - Cart"
-        ],
+        "tags": ["User - Cart"],
         "description": "",
         "responses": {
           "200": {
@@ -918,9 +866,7 @@
         }
       },
       "post": {
-        "tags": [
-          "User - Cart"
-        ],
+        "tags": ["User - Cart"],
         "description": "",
         "parameters": [
           {
@@ -957,9 +903,7 @@
     },
     "/decreaseCartQuantity": {
       "patch": {
-        "tags": [
-          "User - Cart"
-        ],
+        "tags": ["User - Cart"],
         "description": "",
         "parameters": [
           {
@@ -996,9 +940,7 @@
     },
     "/increaseCartQuantity": {
       "patch": {
-        "tags": [
-          "User - Cart"
-        ],
+        "tags": ["User - Cart"],
         "description": "",
         "parameters": [
           {
@@ -1035,9 +977,7 @@
     },
     "/removeCartItem": {
       "delete": {
-        "tags": [
-          "User - Cart"
-        ],
+        "tags": ["User - Cart"],
         "description": "",
         "parameters": [
           {
@@ -1074,9 +1014,7 @@
     },
     "/checkOut": {
       "post": {
-        "tags": [
-          "User - Order"
-        ],
+        "tags": ["User - Order"],
         "description": "",
         "responses": {
           "200": {
@@ -1107,9 +1045,7 @@
     },
     "/cancelOrder": {
       "post": {
-        "tags": [
-          "User - Order"
-        ],
+        "tags": ["User - Order"],
         "description": "",
         "parameters": [
           {
@@ -1149,9 +1085,7 @@
     },
     "/editOrder": {
       "patch": {
-        "tags": [
-          "User - Order"
-        ],
+        "tags": ["User - Order"],
         "description": "",
         "parameters": [
           {
@@ -1194,9 +1128,7 @@
     },
     "/order": {
       "get": {
-        "tags": [
-          "User - Order"
-        ],
+        "tags": ["User - Order"],
         "description": "",
         "parameters": [
           {
@@ -1222,9 +1154,7 @@
     },
     "/moment": {
       "get": {
-        "tags": [
-          "User - Test Routes"
-        ],
+        "tags": ["User - Test Routes"],
         "description": "",
         "responses": {
           "200": {
@@ -1241,9 +1171,7 @@
     },
     "/loginemail": {
       "get": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "description": "",
         "responses": {
           "default": {

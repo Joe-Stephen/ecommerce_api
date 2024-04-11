@@ -62,30 +62,33 @@ const checkOut = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
         const productArray = productsInCart.map((product) => product.dataValues);
         const orderProducts = [];
         let grandTotal = 0;
-        productArray.forEach((product) => {
+        const promises1 = productArray.map((product) => {
             product.subTotal =
                 product.selling_price * product.CartProducts.dataValues.quantity;
             grandTotal += product.subTotal;
             orderProducts.push(product.id);
         });
-        const orderObject = yield dbQueries.createOrder(user.id, grandTotal);
-        if (!orderObject) {
-            console.log("Error in creating order.");
-            return res.status(500).json({ message: "Couldn't place the order." });
-        }
-        const promises = productArray.map((product) => __awaiter(void 0, void 0, void 0, function* () {
-            yield dbQueries.createOrderProduct(orderObject.id, product.id, product.selling_price, product.CartProducts.dataValues.quantity);
-        }));
-        if (promises) {
-            yield Promise.all(promises);
-            //removing user cart
-            yield dbQueries.destroyCart(user.id);
-            //removing cart products
-            yield dbQueries.destroyAllCartProducts(userWithCart.id);
-            return res.status(200).json({
-                message: "Order has been placed.",
-                data: orderObject,
-            });
+        if (promises1) {
+            yield Promise.all(promises1);
+            const orderObject = yield dbQueries.createOrder(user.id, grandTotal);
+            if (!orderObject) {
+                console.log("Error in creating order.");
+                return res.status(500).json({ message: "Couldn't place the order." });
+            }
+            const promises2 = productArray.map((product) => __awaiter(void 0, void 0, void 0, function* () {
+                yield dbQueries.createOrderProduct(orderObject.id, product.id, product.selling_price, product.CartProducts.dataValues.quantity);
+            }));
+            if (promises2) {
+                yield Promise.all(promises2);
+                //removing user cart
+                dbQueries.destroyCart(user.id);
+                //removing cart products
+                dbQueries.destroyAllCartProducts(userWithCart.id);
+                return res.status(200).json({
+                    message: "Order has been placed.",
+                    data: orderObject,
+                });
+            }
         }
     }
     catch (error) {
@@ -116,6 +119,11 @@ const cancelOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
             }
             if ((order === null || order === void 0 ? void 0 : order.orderStatus) === "To be approved") {
                 const cancelRequest = yield dbQueries.createCancelRequest(parseInt(orderId), reason);
+                if (cancelRequest !== true) {
+                    return res.status(500).json({
+                        message: "Error happened while creating your cancel request.",
+                    });
+                }
                 order.orderStatus = "Cancelled";
                 yield order.save();
                 console.log("Cancel request has been submitted.");
@@ -287,7 +295,7 @@ const orderStatus = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                     .json({ message: "No order found with this id." });
             }
             const orderHistory = yield dbQueries.findOrderHistory(order.id);
-            orderHistory === null || orderHistory === void 0 ? void 0 : orderHistory.forEach((history) => {
+            const promises = orderHistory === null || orderHistory === void 0 ? void 0 : orderHistory.forEach((history) => {
                 history.createdAt = (0, moment_timezone_1.default)(history.createdAt)
                     .tz(`${req.body.user.timeZone}`)
                     .format();
@@ -295,9 +303,17 @@ const orderStatus = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                     .tz(`${req.body.user.timeZone}`)
                     .format();
             });
-            return res.status(200).json({
-                message: "Order history has been fetched.",
-                data: orderHistory,
+            if (promises) {
+                yield Promise.all(promises);
+                return res.status(200).json({
+                    message: "Order history has been fetched.",
+                    data: orderHistory,
+                });
+            }
+            return res
+                .status(500)
+                .json({
+                message: "Error happended in the orderStatus function's date formatting section.",
             });
         }
     }

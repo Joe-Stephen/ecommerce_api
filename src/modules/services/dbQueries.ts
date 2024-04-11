@@ -57,7 +57,7 @@ export default class DBQueries {
   //find all users
   async findAllUsers() {
     try {
-      const users: User[] | [] = await User.findAll({limit:3});
+      const users: User[] | [] = await User.findAll({ limit: 3 });
       return users;
     } catch (error) {
       console.error("Error in findUserByEmail :", error);
