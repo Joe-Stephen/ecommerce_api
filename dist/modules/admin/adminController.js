@@ -161,6 +161,7 @@ exports.addProduct = addProduct;
 const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _b;
     try {
+        console.log("Called me!");
         const { productId } = req.query;
         if (!productId) {
             console.log("Please provide the productId.");
@@ -204,13 +205,17 @@ const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, func
                     message: "Selling price shouldn't be greater than regular price.",
                 });
             }
+            console.log("The form data : ", formData);
             let newProduct;
             //updating the product
             const creatingNewProduct = () => __awaiter(void 0, void 0, void 0, function* () {
+                console.log("Called creatingNewProduct!");
                 newProduct = yield dbQueries.updateProduct(formData, parseInt(productId, 10));
+                console.log("completed creatingNewProduct!");
             });
             //clearing existing images
             const clearOldImages = () => __awaiter(void 0, void 0, void 0, function* () {
+                console.log("Called clearOldImages!");
                 const result = yield dbQueries.clearExistingImages(parseInt(productId, 10));
                 if (!result) {
                     console.log("An error happened while clearing old product images.");
@@ -218,8 +223,15 @@ const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, func
                         message: "An error happened while clearing old product images.",
                     });
                 }
+                console.log("completed clearOldImages!");
             });
-            async_1.default.parallel([creatingNewProduct, clearOldImages]);
+            async_1.default.parallel([creatingNewProduct, clearOldImages], (err, results) => {
+                if (err) {
+                    console.error("An error in update product's (async.parallel) block :", err);
+                }
+                console.log("All functions were excecuted parallelly.");
+                console.log("The results are : ", results);
+            });
             //uploading image files
             const promises = (_b = req.files) === null || _b === void 0 ? void 0 : _b.map((file) => __awaiter(void 0, void 0, void 0, function* () {
                 yield dbQueries.saveProductImages(parseInt(productId, 10), file);
@@ -227,7 +239,7 @@ const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, func
             if (promises) {
                 yield Promise.all(promises);
             }
-            res
+            return res
                 .status(200)
                 .json({ message: "Product updated successfully", data: newProduct });
         }
@@ -389,9 +401,7 @@ const getAllOrders = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
                 .json({ message: "Fetched all orders.", data: formattedOrders });
         }
         else {
-            return res
-                .status(500)
-                .json({
+            return res.status(500).json({
                 message: "Unexpected error occurred while formatting order dates.",
             });
         }

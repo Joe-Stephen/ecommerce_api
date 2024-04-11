@@ -234,8 +234,16 @@ export const updateProduct: RequestHandler = async (req, res, next) => {
         }
       };
 
-      async.parallel([creatingNewProduct, clearOldImages]);
-
+      async.parallel([creatingNewProduct, clearOldImages], (err, results) => {
+        if (err) {
+          console.error(
+            "An error in update product's (async.parallel) block :",
+            err
+          );
+        }
+        console.log("All functions were excecuted parallelly.");
+        console.log("The results are : ", results);
+      });
       //uploading image files
       const promises = (req.files as File[] | undefined)?.map(
         async (file: any) => {
@@ -245,7 +253,7 @@ export const updateProduct: RequestHandler = async (req, res, next) => {
       if (promises) {
         await Promise.all(promises);
       }
-      res
+      return res
         .status(200)
         .json({ message: "Product updated successfully", data: newProduct });
     }
@@ -708,9 +716,25 @@ export const notifyUser: RequestHandler = async (req, res, next) => {
         .status(400)
         .json({ message: "Please provide all the fields." });
     }
-    await dbQueries.createNotificationForOne(2, label, content);
-    io.emit("notifyClient", label + " " + content);
-
+    const createNotification = async () => {
+      await dbQueries.createNotificationForOne(2, label, content);
+    };
+    const createSocketMessage = () => {
+      io.emit("notifyClient", label + " " + content);
+    };
+    async.parallel(
+      [createNotification, createSocketMessage],
+      (err, results) => {
+        if (err) {
+          console.error(
+            "An error in notifyUser's (async.parallel) block :",
+            err
+          );
+        }
+        console.log("All functions were excecuted parallelly.");
+        console.log("The results are : ", results);
+      }
+    );
     console.log("The user has been notified.");
     return res.status(200).json({ message: "The user has been notified." });
   } catch (error) {
@@ -724,14 +748,16 @@ export const notifyAllUsers: RequestHandler = async (req, res, next) => {
     const { label, content } = req.body;
     if (!label || !content) {
       console.log("No label or content found in the request body.");
-      res.status(400).json({ message: "Please provide all the fields." });
+      return res
+        .status(400)
+        .json({ message: "Please provide all the fields." });
     }
     await notifyAll(label, content);
     console.log("All users have been notified.");
-    res.status(200).json({ message: "All users have been notified." });
+    return res.status(200).json({ message: "All users have been notified." });
   } catch (error) {
     console.error("Error in notifyAllUsers function.", error);
-    res.status(500).json({ message: "Internal server error." });
+    return res.status(500).json({ message: "Internal server error." });
   }
 };
 
@@ -756,7 +782,6 @@ export const notifySelectedUsers: RequestHandler = async (req, res, next) => {
 export const salesReport: RequestHandler = async (req, res, next) => {
   try {
     const { start, end } = req.query;
-    console.log(start);
     let report!: OrderProducts[] | [] | undefined;
     if (start !== undefined && end !== undefined && start === end) {
       const newDate = new Date(start as string);
@@ -795,8 +820,7 @@ export const salesReport: RequestHandler = async (req, res, next) => {
 
 export const assignCronJob: RequestHandler = async (req, res, next) => {
   try {
-    const task = () => console.log("Date : ", new Date().toLocaleString());
-    cronJob(task);
+    const task = () => cronJob(task);
     return res
       .status(200)
       .json({ message: "The repeating task has been started." });
@@ -808,8 +832,8 @@ export const assignCronJob: RequestHandler = async (req, res, next) => {
 
 export const mailAutomation: RequestHandler = async (req, res, next) => {
   try {
+    const { email } = req.query;
     //creating parameters for send mail service
-    const email = "joestephenk10@gmail.com";
     const subject = "Mail automation test.";
     const text = `This is just a test mail from admin.`;
 
@@ -932,7 +956,7 @@ export const mailAutomation: RequestHandler = async (req, res, next) => {
 
     html += html_header + html_body + html_content + html_footer;
 
-    const task = async () => await sendMail(email, subject, text, html);
+    const task = async () => await sendMail(email as string, subject, text, html);
     cronJob(task);
     return res
       .status(200)
