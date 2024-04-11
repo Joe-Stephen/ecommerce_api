@@ -12,6 +12,9 @@ const cors_1 = __importDefault(require("cors"));
 const morgan_body_1 = __importDefault(require("morgan-body"));
 const passport_1 = __importDefault(require("passport"));
 const express_session_1 = __importDefault(require("express-session"));
+// import cluster from "cluster";
+// const os = require("os");
+// const numCPUs = os.cpus().length;
 require("./modules/services/passport");
 //swagger imports
 const swaggerUi = require("swagger-ui-express");
@@ -32,9 +35,26 @@ const notificationModel_1 = __importDefault(require("./modules/notifications/not
 const orderHistoryModel_1 = __importDefault(require("./modules/order/orderHistoryModel"));
 dotenv_1.default.config();
 const PORT = 3000 || process.env.PORT;
+let server;
+// if (cluster.isMaster) {
+//   console.log(`Master process ${process.pid} is running`);
+//   for (let i = 0; i < numCPUs; i++) {
+//     cluster.fork();
+//   }
+//   cluster.on("exit", (worker, code, signal) => {
+//     console.log(`Worker process ${worker.process.pid} died. Restarting...`);
+//     cluster.fork();
+//   });
+// } else {
+// }
 const app = (0, express_1.default)();
 //using middlewares
-app.use((0, express_session_1.default)({ secret: process.env.JWT_SECRET, resave: false, saveUninitialized: true, cookie: { secure: false } }));
+app.use((0, express_session_1.default)({
+    secret: process.env.JWT_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false },
+}));
 app.use(express_1.default.json());
 app.use((0, cors_1.default)());
 app.use(express_1.default.urlencoded({ extended: true }));
@@ -47,7 +67,7 @@ app.use("/", userRouter_1.default);
 app.use("/admin", adminRouter_1.default);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swagger_output_json_1.default));
 //setting up server connection
-const server = app.listen(PORT, () => {
+server = app.listen(PORT, () => {
     console.log(`Ecommerce Server is running on http://localhost:${PORT}`);
 });
 exports.io = new socket_io_1.Server(server);

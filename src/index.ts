@@ -6,10 +6,14 @@ import cors from "cors";
 import morganBody from "morgan-body";
 import passport from "passport";
 import session from "express-session";
+//cluster imports
+import cluster from "cluster";
+const os = require("os");
+const numCPUs = os.cpus().length;
 require("./modules/services/passport");
 //swagger imports
 const swaggerUi = require("swagger-ui-express");
-import swaggerOutput from './swagger-output.json';
+import swaggerOutput from "./swagger-output.json";
 //importing websocket modules
 import { Server } from "socket.io";
 //importing models
@@ -25,32 +29,54 @@ import Cancel from "./modules/order/cancelOrderModel";
 import Notification from "./modules/notifications/notificationModel";
 import OrderHistory from "./modules/order/orderHistoryModel";
 
-
 dotenv.config();
 const PORT = 3000 || process.env.PORT;
-const app: Application = express();
-//using middlewares
+let server!: any;
 
-app.use(session({secret:process.env.JWT_SECRET as string, resave:false, saveUninitialized:true, cookie:{secure:false}}));
-app.use(express.json());
-app.use(cors());
-app.use(express.urlencoded({ extended: true }));
-app.use(passport.initialize());
-app.use(passport.session());
+if (cluster.isMaster) {
+  console.log(`Master process ${process.pid} is running`);
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
+  cluster.on("exit", (worker, code, signal) => {
+    console.log(`Worker process ${worker.process.pid} died. Restarting...`);
+    cluster.fork();
+  });
+} else {
+  const app: Application = express();
+  
+  //using middlewares
+  
+  app.use(
+    session({
+      secret: process.env.JWT_SECRET as string,
+      resave: false,
+      saveUninitialized: true,
+      cookie: { secure: false },
+    })
+  );
+  app.use(express.json());
+  app.use(cors());
+  app.use(express.urlencoded({ extended: true }));
+  app.use(passport.initialize());
+  app.use(passport.session());
+  
+  //hooking morganBody with express app
+  morganBody(app);
+  
+  // setting routers
+  app.use("/", userRouter);
+  app.use("/admin", adminRouter);
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerOutput));
+  
+  //setting up server connection
+  server = app.listen(PORT, () => {
+    console.log(`Ecommerce Server is running on http://localhost:${PORT}`);
+  });
+}
 
-//hooking morganBody with express app
-morganBody(app);
-
-// setting routers
-app.use("/", userRouter);
-app.use("/admin", adminRouter);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerOutput));
-
-//setting up server connection
-const server = app.listen(PORT, () => {
-  console.log(`Ecommerce Server is running on http://localhost:${PORT}`);
-});
 export const io = new Server(server);
+
 // associations
 //image associations
 Image.belongsTo(Product, { foreignKey: "productId" });
