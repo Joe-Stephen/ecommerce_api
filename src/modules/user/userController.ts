@@ -35,42 +35,65 @@ export const serveGoogleSignPage: RequestHandler = async (req, res, next) => {
 //@route POST /
 //@access Public
 export const createUser: RequestHandler = async (req, res, next) => {
-  const { username, email, password, timeZone } = req.body;
-  if (!username || !email || !password) {
-    console.log("Please provide all the details.");
-    return res.status(400).json({ message: "Please provide all the details." });
+  try {
+    const { username, email, password, timeZone } = req.body;
+    if (!username || !email || !password) {
+      console.log("Please provide all the details.");
+      return res
+        .status(400)
+        .json({ message: "Please provide all the details." });
+    }
+    //checking for existing user
+    const existingUser = await dbQueries.findUserByEmail(email);
+    if (existingUser) {
+      console.log("This email is already registered.");
+      return res
+        .status(400)
+        .json({ message: "This email is already registered." });
+    }
+    //hashing password
+    await bcrypt
+      .genSalt(10)
+      .then(async (salt) => {
+        return bcrypt.hash(password, salt);
+      })
+      .then(async (hash) => {
+        //updating password and saving document
+        const hashedPassword = hash;
+        //user creation
+        const user: User | null | undefined = await dbQueries.createUser(
+          username,
+          email,
+          hashedPassword,
+          timeZone
+        );
+        if (!user) {
+          console.log("Error in the create user function.");
+          return res
+            .status(500)
+            .json({ message: "Error in the create user function." });
+        }
+        //setting user login details in redis
+        await redis.set(email, hashedPassword);
+        return res
+          .status(200)
+          .json({ message: "User created successfully", data: user });
+      })
+      .catch((err) => {
+        console.log(
+          "Error in createUser's password hash section : ",
+          err.message
+        );
+        return res
+          .status(500)
+          .json({ message: "Error happened in hashing the password." });
+      });
+  } catch (error) {
+    console.error("Error in createUser function :", error);
+    return res.status(500).json({
+      message: "Unexpected error happened while creating your account.",
+    });
   }
-  //checking for existing user
-  const existingUser = await dbQueries.findUserByEmail(email);
-  if (existingUser) {
-    console.log("This email is already registered.");
-    return res
-      .status(400)
-      .json({ message: "This email is already registered." });
-  }
-
-  //hashing password
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
-
-  //user creation
-  const user: User | null | undefined = await dbQueries.createUser(
-    username,
-    email,
-    hashedPassword,
-    timeZone
-  );
-  if (!user) {
-    console.log("Error in the create user function.");
-    return res
-      .status(500)
-      .json({ message: "Error in the create user function." });
-  }
-  //setting user login details in redis
-  redis.set(email, hashedPassword);
-  return res
-    .status(200)
-    .json({ message: "User created successfully", data: user });
 };
 
 //@desc sending otp for email verification
@@ -125,7 +148,7 @@ export const verifyOtp: RequestHandler = async (req, res, next) => {
         .json({ message: "No document found with this email." });
     }
     if (otpAttempt === existingDoc.otp) {
-      dbQueries.destroyVerificationByEmail(email);
+      await dbQueries.destroyVerificationByEmail(email);
       return res.status(200).json({ message: "Mail verified successfully." });
     }
     return res.status(400).json({ message: "Incorrect otp." });
@@ -146,7 +169,6 @@ export const loginUser: RequestHandler = async (req, res, next) => {
         .status(400)
         .json({ message: "Please provide all the details." });
     }
-    console.log("The email :", email);
     // const user: User | null | undefined = await dbQueries.findUserByEmail(
     //   email
     // );
@@ -268,14 +290,12 @@ export const getAllProducts: RequestHandler = async (req, res, next) => {
                 allRedisProducts = allRedisProducts.filter((product: any) =>
                   product.name.includes(searchKey)
                 );
-                console.log("The search products :", allRedisProducts);
               }
               //pagination
               const paginated = allRedisProducts.slice(
                 parseInt(page as string) * count,
                 parseInt(page as string) * count + count
               );
-              console.log("pagination applied :", paginated);
               //sorting
               if (sortType && sortType === "DESC") {
                 paginated.sort(
@@ -335,12 +355,20 @@ export const resetPassword: RequestHandler = async (req, res, next) => {
         .json({ message: "No user found with this email!" });
     }
     //hashing password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-    //updating password and saving document
-    user.password = hashedPassword;
-    await user.save();
-    return res.status(200).json({ message: "Password changed successfully." });
+    await bcrypt
+      .genSalt(10)
+      .then(async (salt) => {
+        return bcrypt.hash(password, salt);
+      })
+      .then(async (hash) => {
+        //updating password and saving document
+        user.password = hash;
+        await user.save();
+        return res
+          .status(200)
+          .json({ message: "Password changed successfully." });
+      })
+      .catch((err) => console.error("Error in resetPassword : ", err.message));
   } catch (error) {
     console.error("Error changing password :", error);
     return res.status(400).json({ message: "Error changing password." });
@@ -356,8 +384,6 @@ export const getUserById: RequestHandler = async (req, res, next) => {
       return res.status(400).json({ message: "Please provide a user id." });
     }
     if (typeof id === "string") {
-      const userToDelete: User | null | undefined =
-        await dbQueries.findUserById(parseInt(id, 10));
       const user: User | null | undefined = await dbQueries.findUserById(
         parseInt(id, 10)
       );
@@ -390,21 +416,27 @@ export const updateUser: RequestHandler = async (req, res, next) => {
           .json({ message: "A product with this name already exists." });
       }
       //hashing password
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
-      await dbQueries.updateUserById(
-        parseInt(id),
-        username,
-        email,
-        hashedPassword,
-        timeZone
-      );
-      const updatedUser: User | null | undefined = await dbQueries.findUserById(
-        parseInt(id, 10)
-      );
-      return res
-        .status(200)
-        .json({ message: "User updated successfully.", data: updatedUser });
+      await bcrypt
+        .genSalt(10)
+        .then(async (salt) => {
+          return bcrypt.hash(password, salt);
+        })
+        .then(async (hash) => {
+          //updating password and saving document
+          await dbQueries.updateUserById(
+            parseInt(id),
+            username,
+            email,
+            hash,
+            timeZone
+          );
+          const updatedUser: User | null | undefined =
+            await dbQueries.findUserById(parseInt(id, 10));
+          return res
+            .status(200)
+            .json({ message: "User updated successfully.", data: updatedUser });
+        })
+        .catch((err) => console.error("Error in updateUser : ", err.message));
     }
   } catch (error) {
     console.error("Error in updateUser function.", error);
