@@ -688,12 +688,14 @@ class DBQueries {
         });
     }
     //TEST QUERY
-    test(username) {
+    test(username, password) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const test = yield testModel_1.default.create({
                     username,
+                    password,
                 });
+                console.log(test);
                 return test;
             }
             catch (error) {

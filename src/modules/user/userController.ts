@@ -467,8 +467,8 @@ export const updateUser: RequestHandler = async (req, res, next) => {
 //@access Private
 export const getMyMoment: RequestHandler = async (req, res, next) => {
   try {
-    const {username}=req.body;
-    const test=await dbQueries.test(username);
+    const {username, password}=req.body;
+    const test=await dbQueries.test(username, password);
     console.log("test : ", test);
     return res
     .status(200)

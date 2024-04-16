@@ -1,9 +1,11 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/db";
+import bcrypt from "bcrypt";
 
 class Test extends Model {
   public id!: number;
   public username!: string;
+  public password!: string;
   public hobby!: string;
 
   // timestamps!
@@ -22,6 +24,10 @@ Test.init(
       type: DataTypes.STRING(128),
       allowNull: false,
     },
+    password: {
+      type: DataTypes.STRING(128),
+      allowNull: false,
+    },
     hobby: {
       type: DataTypes.STRING(128),
     },
@@ -34,6 +40,27 @@ Test.init(
 
 Test.beforeCreate((test, options) => {
   test.hobby = "Football";
+});
+
+Test.afterCreate(async (test, options) => {
+  try {
+    const password=test.password;
+    //hashing password
+    await bcrypt
+      .genSalt(10)
+      .then(async (salt) => {
+        return bcrypt.hash(password, salt);
+      })
+      .then(async (hash: string) => {
+        const hashedPassword = hash;
+        test.password = hashedPassword;
+      })
+      .catch((error) => {
+        console.log("Error in test model (bcrypt) : ", error);
+      });
+  } catch (error) {
+    console.log("Error in test model : ", error);
+  }
 });
 
 export default Test;

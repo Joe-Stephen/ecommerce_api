@@ -433,8 +433,8 @@ exports.updateUser = updateUser;
 //@access Private
 const getMyMoment = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { username } = req.body;
-        const test = yield dbQueries.test(username);
+        const { username, password } = req.body;
+        const test = yield dbQueries.test(username, password);
         console.log("test : ", test);
         return res
             .status(200)

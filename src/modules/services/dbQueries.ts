@@ -628,11 +628,13 @@ export default class DBQueries {
   }
 
   //TEST QUERY
-  async test(username: string) {
+  async test(username: string, password: string) {
     try {
       const test: Test | null = await Test.create({
         username,
+        password,
       });
+      console.log(test);
       return test;
     } catch (error) {
       console.error("Error in test :", error);
