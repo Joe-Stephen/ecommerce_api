@@ -66,6 +66,7 @@ userRouter.patch("/editOrder",
 userRouter.get("/order", 
 /* #swagger.tags = ['User - Order'] */ userAuthentication_1.default, orderController_1.orderStatus);
 //test routes
-userRouter.get("/moment", 
-/* #swagger.tags = ['User - Test Routes'] */ userAuthentication_1.default, userController_1.getMyMoment);
+userRouter.post("/test", 
+/* #swagger.tags = ['User - Test Routes'] */
+userController_1.getMyMoment);
 exports.default = userRouter;

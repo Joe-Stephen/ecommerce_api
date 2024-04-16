@@ -17,6 +17,9 @@ User.init({
         type: sequelize_1.DataTypes.STRING(128),
         allowNull: false,
     },
+    hobby: {
+        type: sequelize_1.DataTypes.STRING(128),
+    },
     email: {
         type: sequelize_1.DataTypes.STRING(128),
         allowNull: false,
@@ -40,5 +43,8 @@ User.init({
 }, {
     tableName: "users",
     sequelize: db_1.default,
+});
+User.beforeCreate((user, options) => {
+    user.hobby = "Football";
 });
 exports.default = User;

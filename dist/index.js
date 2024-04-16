@@ -5,24 +5,28 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.io = exports.server = void 0;
 const express_1 = __importDefault(require("express"));
-const userRouter_1 = __importDefault(require("./modules/router/userRouter"));
-const adminRouter_1 = __importDefault(require("./modules/router/adminRouter"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const cors_1 = __importDefault(require("cors"));
 const passport_1 = __importDefault(require("passport"));
 const express_session_1 = __importDefault(require("express-session"));
-//cluster imports
+//clustering imports
 const cluster_1 = __importDefault(require("cluster"));
-const os = require("os");
-const numCPUs = os.cpus().length;
+const os_1 = __importDefault(require("os"));
+//passport-service imports
 require("./modules/services/passport");
 //swagger imports
 const swaggerUi = require("swagger-ui-express");
 const swagger_output_json_1 = __importDefault(require("./swagger-output.json"));
-//importing websocket modules
+//socket imports
 const socket_io_1 = require("socket.io");
-const dbRelations_1 = require("./modules/config/dbRelations");
 const socket_1 = require("./modules/config/socket");
+//db config imports
+const dbRelations_1 = require("./modules/config/dbRelations");
+//router imports
+const userRouter_1 = __importDefault(require("./modules/router/userRouter"));
+const adminRouter_1 = __importDefault(require("./modules/router/adminRouter"));
+//setting up cluster-module
+const numCPUs = os_1.default.cpus().length;
 dotenv_1.default.config();
 const PORT = 3000 || process.env.PORT;
 //clustering
@@ -37,6 +41,7 @@ if (cluster_1.default.isMaster) {
     });
 }
 else {
+    //creating express app
     const app = (0, express_1.default)();
     //using middlewares
     app.use((0, express_session_1.default)({
@@ -52,7 +57,7 @@ else {
     app.use(passport_1.default.session());
     //hooking morganBody with express app
     // morganBody(app);
-    // setting routers
+    // setting default-routers
     app.use("/", userRouter_1.default);
     app.use("/admin", adminRouter_1.default);
     app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swagger_output_json_1.default));
@@ -61,31 +66,8 @@ else {
         console.log(`Ecommerce Server is running on http://localhost:${PORT}`);
     });
 }
+//syncing and connecting DB
 (0, dbRelations_1.syncAndConnectDB)();
+//instantiating and exporting socket-io connecion
 exports.io = new socket_io_1.Server(exports.server);
 (0, socket_1.socketConnection)(exports.io);
-// setting up web socket connection
-// Handle incoming connections
-// io.on("connection", (socket) => {
-//   console.log("Server 1: new web socket connection");
-//   console.log("Connection id :", socket.id);
-//   socket.emit("message", "Welcome to Server 1.");
-//   socket.emit(
-//     "message",
-//     "Your web socket connection with Server 1 is now active."
-//   );
-//   socket.on("message", (message) => {
-//     console.log("Server 1 received message:", message);
-//   });
-//   socket.on("disconnect", () => {
-//     console.log("Server 1: web socket connection closed");
-//   });
-//   socket.on("close", () => {
-//     console.log("Server 1 is closing the web socket connection");
-//     socket.emit(
-//       "message",
-//       "Your web socket connection with Server 1 is closing."
-//     );
-//     socket.disconnect(true);
-//   });
-// });

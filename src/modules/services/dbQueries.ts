@@ -13,6 +13,7 @@ import Verifications from "../user/verificationsModel";
 import CartProducts from "../cart/cartProductsModel";
 import Cancel from "../order/cancelOrderModel";
 import OrderHistory from "../order/orderHistoryModel";
+import Test from "../test/testModel";
 
 export default class DBQueries {
   //-----USER TABLE QUERIES-----//
@@ -33,7 +34,7 @@ export default class DBQueries {
       });
       return user;
     } catch (error) {
-      console.error("Error in findUserByEmail :", error);
+      console.error("Error in createUser :", error);
     }
   }
 
@@ -623,6 +624,18 @@ export default class DBQueries {
       return orderHistory;
     } catch (error) {
       console.error("Error in findOrderHistory :", error);
+    }
+  }
+
+  //TEST QUERY
+  async test(username: string) {
+    try {
+      const test: Test | null = await Test.create({
+        username,
+      });
+      return test;
+    } catch (error) {
+      console.error("Error in test :", error);
     }
   }
 }

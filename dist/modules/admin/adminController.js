@@ -31,7 +31,9 @@ const orderProductsModel_1 = __importDefault(require("../order/orderProductsMode
 //importing DB queries
 const dbQueries_1 = __importDefault(require("../services/dbQueries"));
 const dbQueries = new dbQueries_1.default();
-//admin login
+//@desc Logging in admin
+//@route POST /admin-login
+//@access Public
 const loginAdmin = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, password } = req.body;
@@ -77,7 +79,9 @@ const generateToken = (email) => {
         expiresIn: "1d",
     });
 };
-//creating new product
+//@desc Creating new product
+//@route POST /product
+//@access Private
 const addProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
@@ -158,6 +162,9 @@ const addProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
 });
 exports.addProduct = addProduct;
 //updating a product
+//@desc Editing product details
+//@route POST /updateProduct
+//@access Private
 const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _b;
     try {
@@ -244,7 +251,9 @@ const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.updateProduct = updateProduct;
-//toggling the user access status (block/unblock)
+//@desc Toggling user access status (block/unblock)
+//@route PATCH /toggleStatus
+//@access Private
 const toggleUserAccess = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { userId } = req.query;
@@ -276,7 +285,9 @@ const toggleUserAccess = (req, res, next) => __awaiter(void 0, void 0, void 0, f
     }
 });
 exports.toggleUserAccess = toggleUserAccess;
-//delete an existing user
+//@desc Deleting a user
+//@route DELETE /:id
+//@access Private
 const deleteUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
@@ -309,7 +320,9 @@ const deleteUser = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.deleteUser = deleteUser;
-//get all users
+//@desc Getting all users
+//@route GET /
+//@access Private
 const getAllUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const allUsers = yield dbQueries.findAllUsers();
@@ -327,7 +340,9 @@ const getAllUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.getAllUsers = getAllUsers;
-//get all orders
+//@desc Get all orders
+//@route GET /orders
+//@access Private
 const getAllOrders = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let queryOptions = {
@@ -406,7 +421,9 @@ const getAllOrders = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.getAllOrders = getAllOrders;
-//approving an order
+//@desc Approving an order
+//@route PATCH /approveOrder
+//@access Private
 const approveOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         //getting user id from request query
@@ -629,7 +646,9 @@ const approveOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.approveOrder = approveOrder;
-//approving an order
+//@desc Update order status
+//@route POST /orderStatus
+//@access Private
 const updateOrderStatus = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         //getting user id from request query
@@ -665,7 +684,9 @@ const updateOrderStatus = (req, res, next) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.updateOrderStatus = updateOrderStatus;
-//get user by id
+//@desc Get user by id
+//@route GET /getUser/:id
+//@access Private
 const getUserById = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
@@ -687,6 +708,9 @@ const getUserById = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.getUserById = getUserById;
+//@desc Notifying a user
+//@route POST /notify
+//@access Private
 const notifyUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { label, content } = req.body;
@@ -718,6 +742,9 @@ const notifyUser = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.notifyUser = notifyUser;
+//@desc Notifying all users
+//@route POST /notifyAll
+//@access Private
 const notifyAllUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { label, content } = req.body;
@@ -737,6 +764,9 @@ const notifyAllUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.notifyAllUsers = notifyAllUsers;
+//@desc Notifying selected users
+//@route POST /notifySelected
+//@access Private
 const notifySelectedUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { ids, label, content } = req.body;
@@ -756,6 +786,9 @@ const notifySelectedUsers = (req, res, next) => __awaiter(void 0, void 0, void 0
     }
 });
 exports.notifySelectedUsers = notifySelectedUsers;
+//@desc Getting sales report
+//@route GET /salesReport
+//@access Private
 const salesReport = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { start, end } = req.query;
@@ -797,6 +830,9 @@ const salesReport = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.salesReport = salesReport;
+//@desc Job automation (cron-job)
+//@route GET /repeatTask
+//@access Private
 const assignCronJob = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const task = () => (0, cronService_1.cronJob)(task);
@@ -810,6 +846,9 @@ const assignCronJob = (req, res, next) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.assignCronJob = assignCronJob;
+//@desc Mail automation test function
+//@route GET /testMailAutomation
+//@access Private
 const mailAutomation = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email } = req.query;

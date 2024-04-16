@@ -16,6 +16,9 @@ exports.removeCartItem = exports.increaseCartQuantity = exports.decreaseCartQuan
 //importing DB queries
 const dbQueries_1 = __importDefault(require("../services/dbQueries"));
 const dbQueries = new dbQueries_1.default();
+//@desc Loading user cart
+//@route GET /cart
+//@access Private
 const getUserCart = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const loggedInUser = req.body.user;
@@ -44,6 +47,9 @@ const getUserCart = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.getUserCart = getUserCart;
+//@desc Adding product to cart
+//@route POST /cart
+//@access Private
 const addToCart = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const loggedInUser = req.body.user;
@@ -111,6 +117,9 @@ const addToCart = (req, res, next) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.addToCart = addToCart;
+//@desc Decreasing cart quantity
+//@route PATCH /decreaseCartQuantity
+//@access Private
 const decreaseCartQuantity = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const loggedInUser = req.body.user;
@@ -174,6 +183,9 @@ const decreaseCartQuantity = (req, res, next) => __awaiter(void 0, void 0, void 
     }
 });
 exports.decreaseCartQuantity = decreaseCartQuantity;
+//@desc Increasing cart quantity
+//@route PATCH /increaseCartQuantity
+//@access Private
 const increaseCartQuantity = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const loggedInUser = req.body.user;
@@ -230,6 +242,9 @@ const increaseCartQuantity = (req, res, next) => __awaiter(void 0, void 0, void 
     }
 });
 exports.increaseCartQuantity = increaseCartQuantity;
+//@desc Deleting a cart product
+//@route DELETE /removeCartItem
+//@access Private
 const removeCartItem = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const loggedInUser = req.body.user;

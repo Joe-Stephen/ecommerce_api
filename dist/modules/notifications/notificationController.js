@@ -16,6 +16,9 @@ exports.toggleStatus = exports.getAllNotifications = void 0;
 //importing DB queries
 const dbQueries_1 = __importDefault(require("../services/dbQueries"));
 const dbQueries = new dbQueries_1.default();
+//@desc Fetch all notifications of a user
+//@route GET /notifications
+//@access Private
 const getAllNotifications = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const loggedInUser = req.body.user;
@@ -41,6 +44,9 @@ const getAllNotifications = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.getAllNotifications = getAllNotifications;
+//@desc Toggle the read status of a notification
+//@route PATCH /notification
+//@access Private
 const toggleStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { ids } = req.body;

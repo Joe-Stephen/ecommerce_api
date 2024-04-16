@@ -115,7 +115,7 @@ export const sendVerifyMail: RequestHandler = async (req, res, next) => {
         .status(400)
         .json({ message: "This email is already registered!" });
     } else {
-      const otp: string = generateOtp();
+      const otp: any = generateOtp();
       const subject: string = "Register OTP Verification";
       const text: string = `Your OTP for verification is ${otp}`;
       //sending otp
@@ -467,21 +467,12 @@ export const updateUser: RequestHandler = async (req, res, next) => {
 //@access Private
 export const getMyMoment: RequestHandler = async (req, res, next) => {
   try {
-    const IndiaToday = moment();
-    console.log("Today in India : ", IndiaToday.format());
-    const loggedInUser = req.body.user;
-    console.log("The logged in user object :", loggedInUser);
-    if (loggedInUser) {
-      console.log(
-        "Today for user : ",
-        IndiaToday.tz(`${loggedInUser.timeZone}`).format()
-      );
-      return res.status(200).json({
-        message: "Time calculation is successfull!",
-        data: IndiaToday.tz(`${loggedInUser.timeZone}`).format(),
-      });
-    }
-    return res.status(400).json({ message: "You have to log in first!" });
+    const {username}=req.body;
+    const test=await dbQueries.test(username);
+    console.log("test : ", test);
+    return res
+    .status(200)
+    .json({ message: "Test created successfully.", data: test }); 
   } catch (error) {
     console.error("Error in getMyMoment function.", error);
     res.status(500).json({ message: "Internal server error." });

@@ -62,7 +62,7 @@ if (cluster.isMaster) {
   app.use(passport.initialize());
   app.use(passport.session());
   //hooking morganBody with express app
-  morganBody(app);
+  // morganBody(app);
   // setting default-routers
   app.use("/", userRouter);
   app.use("/admin", adminRouter);

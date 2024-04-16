@@ -136,9 +136,9 @@ userRouter.get(
 );
 
 //test routes
-userRouter.get(
-  "/moment",
-  /* #swagger.tags = ['User - Test Routes'] */ verifyUser,
+userRouter.post(
+  "/test",
+  /* #swagger.tags = ['User - Test Routes'] */
   getMyMoment
 );
 

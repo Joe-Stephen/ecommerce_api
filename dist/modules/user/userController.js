@@ -17,14 +17,15 @@ const otpGenerator_1 = require("../services/otpGenerator");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const redis_1 = __importDefault(require("../config/redis"));
-const moment_timezone_1 = __importDefault(require("moment-timezone"));
 //importing services
 const sendMail_1 = require("../services/sendMail");
 //importing DB queries
 const dbQueries_1 = __importDefault(require("../services/dbQueries"));
 const imageModel_1 = __importDefault(require("../product/imageModel"));
 const dbQueries = new dbQueries_1.default();
-//google Auth with passport
+//@desc google Auth with passport
+//@route GET /
+//@access Public
 const serveGoogleSignPage = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         res.send('<a href="/auth/google">Authenticate with Google</a>');
@@ -163,6 +164,9 @@ const verifyOtp = (req, res, next) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.verifyOtp = verifyOtp;
+//@desc logging in user
+//@route POST /login
+//@access Public
 const loginUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, password } = req.body;
@@ -210,6 +214,9 @@ const loginUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.loginUser = loginUser;
+//@desc user getting all products
+//@route GET /products
+//@access Public
 const getAllProducts = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         var redisProducts = [];
@@ -317,6 +324,9 @@ const generateToken = (email) => {
         expiresIn: "1d",
     });
 };
+//@desc user changing password
+//@route PATCH /resetPassword
+//@access Private
 const resetPassword = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email } = req.body.user;
@@ -351,6 +361,9 @@ const resetPassword = (req, res, next) => __awaiter(void 0, void 0, void 0, func
 });
 exports.resetPassword = resetPassword;
 //get user by id
+//@desc Getting user details by id
+//@route GET /me
+//@access Private
 const getUserById = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
@@ -371,6 +384,9 @@ const getUserById = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.getUserById = getUserById;
+//@desc Updating user details
+//@route PUT /:id
+//@access Private
 const updateUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
@@ -412,20 +428,17 @@ const updateUser = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
 });
 exports.updateUser = updateUser;
 //user test functions
+//@desc Test function for user
+//@route GET /moment
+//@access Private
 const getMyMoment = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const IndiaToday = (0, moment_timezone_1.default)();
-        console.log("Today in India : ", IndiaToday.format());
-        const loggedInUser = req.body.user;
-        console.log("The logged in user object :", loggedInUser);
-        if (loggedInUser) {
-            console.log("Today for user : ", IndiaToday.tz(`${loggedInUser.timeZone}`).format());
-            return res.status(200).json({
-                message: "Time calculation is successfull!",
-                data: IndiaToday.tz(`${loggedInUser.timeZone}`).format(),
-            });
-        }
-        return res.status(400).json({ message: "You have to log in first!" });
+        const { username } = req.body;
+        const test = yield dbQueries.test(username);
+        console.log("test : ", test);
+        return res
+            .status(200)
+            .json({ message: "Test created successfully.", data: test });
     }
     catch (error) {
         console.error("Error in getMyMoment function.", error);

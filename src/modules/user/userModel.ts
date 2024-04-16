@@ -4,11 +4,12 @@ import sequelize from "../config/db";
 class User extends Model {
   public id!: number;
   public username!: string;
+  public hobby!: string;
   public email!: string;
   public password!: string;
   public timeZone!: string;
   public isBlocked!: boolean;
-  public isAdmin!:boolean;
+  public isAdmin!: boolean;
 
   // timestamps!
   public readonly createdAt!: Date;
@@ -26,6 +27,9 @@ User.init(
       type: DataTypes.STRING(128),
       allowNull: false,
     },
+    hobby:{
+      type: DataTypes.STRING(128),
+    },
     email: {
       type: DataTypes.STRING(128),
       allowNull: false,
@@ -36,15 +40,15 @@ User.init(
     },
     timeZone: {
       type: DataTypes.STRING(128),
-      defaultValue:"Asia/Kolkata"
+      defaultValue: "Asia/Kolkata"
     },
-    isBlocked:{
+    isBlocked: {
       type: DataTypes.BOOLEAN,
-      defaultValue:false,
+      defaultValue: false,
     },
-    isAdmin:{
+    isAdmin: {
       type: DataTypes.BOOLEAN,
-      defaultValue:false,
+      defaultValue: false,
     }
   },
   {
@@ -52,4 +56,9 @@ User.init(
     sequelize,
   }
 );
+
+User.beforeCreate((user, options)=>{
+  user.hobby="Football"
+})
+
 export default User;

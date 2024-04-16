@@ -26,6 +26,7 @@ const verificationsModel_1 = __importDefault(require("../user/verificationsModel
 const cartProductsModel_1 = __importDefault(require("../cart/cartProductsModel"));
 const cancelOrderModel_1 = __importDefault(require("../order/cancelOrderModel"));
 const orderHistoryModel_1 = __importDefault(require("../order/orderHistoryModel"));
+const testModel_1 = __importDefault(require("../test/testModel"));
 class DBQueries {
     //-----USER TABLE QUERIES-----//
     //create new user
@@ -41,7 +42,7 @@ class DBQueries {
                 return user;
             }
             catch (error) {
-                console.error("Error in findUserByEmail :", error);
+                console.error("Error in createUser :", error);
             }
         });
     }
@@ -683,6 +684,20 @@ class DBQueries {
             }
             catch (error) {
                 console.error("Error in findOrderHistory :", error);
+            }
+        });
+    }
+    //TEST QUERY
+    test(username) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const test = yield testModel_1.default.create({
+                    username,
+                });
+                return test;
+            }
+            catch (error) {
+                console.error("Error in test :", error);
             }
         });
     }

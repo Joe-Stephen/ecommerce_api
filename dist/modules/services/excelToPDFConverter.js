@@ -8,11 +8,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.convertExcelToPDF = void 0;
 const ExcelJS = require("exceljs");
 const { PDFDocument, StandardFonts } = require("pdf-lib");
-const fs = require("fs");
+const fs_1 = __importDefault(require("fs"));
 const convertExcelToPDF = (excelFilePath, pdfFilePath) => __awaiter(void 0, void 0, void 0, function* () {
     // Loading Excel workbook
     const workbook = new ExcelJS.Workbook();
@@ -42,6 +45,6 @@ const convertExcelToPDF = (excelFilePath, pdfFilePath) => __awaiter(void 0, void
     });
     // Saving PDF to file
     const pdfBytes = yield pdfDoc.save();
-    fs.writeFileSync(pdfFilePath, pdfBytes);
+    fs_1.default.writeFileSync(pdfFilePath, pdfBytes);
 });
 exports.convertExcelToPDF = convertExcelToPDF;

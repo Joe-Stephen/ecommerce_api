@@ -17,6 +17,9 @@ const moment_timezone_1 = __importDefault(require("moment-timezone"));
 //importing DB queries
 const dbQueries_1 = __importDefault(require("../services/dbQueries"));
 const dbQueries = new dbQueries_1.default();
+//@desc Place order from cart
+//@route POST /checkOut
+//@access Private
 const checkOut = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const date = (0, moment_timezone_1.default)();
@@ -97,6 +100,9 @@ const checkOut = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.checkOut = checkOut;
+//@desc Cancel an order
+//@route POST /cancelOrder
+//@access Private
 const cancelOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { orderId } = req.query;
@@ -181,6 +187,9 @@ const cancelOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.cancelOrder = cancelOrder;
+//@desc Edit an order
+//@route PATCH /editOrder
+//@access Private
 const editOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { orderId } = req.query;
@@ -277,6 +286,9 @@ const editOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.editOrder = editOrder;
+//@desc See order status
+//@route GET /order
+//@access Private
 const orderStatus = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { orderId } = req.query;
