@@ -19,6 +19,7 @@ import {
   salesReport,
   assignCronJob,
   mailAutomation,
+  productsLessThan,
 } from "../admin/adminController";
 import { resetPassword } from "../user/userController";
 
@@ -44,6 +45,11 @@ adminRouter.post(
   verifyAdmin,
   /* #swagger.tags = ['Admin - Product Management */ upload.array("images"),
   addProduct
+);
+adminRouter.get(
+  "/productLessThan",
+  /* #swagger.tags = ['User - Order'] */ verifyAdmin,
+  productsLessThan
 );
 adminRouter.post(
   "/updateProduct",

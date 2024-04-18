@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.mailAutomation = exports.assignCronJob = exports.salesReport = exports.notifySelectedUsers = exports.notifyAllUsers = exports.notifyUser = exports.getUserById = exports.updateOrderStatus = exports.approveOrder = exports.getAllOrders = exports.getAllUsers = exports.deleteUser = exports.toggleUserAccess = exports.updateProduct = exports.addProduct = exports.loginAdmin = void 0;
+exports.productsLessThan = exports.mailAutomation = exports.assignCronJob = exports.salesReport = exports.notifySelectedUsers = exports.notifyAllUsers = exports.notifyUser = exports.getUserById = exports.updateOrderStatus = exports.approveOrder = exports.getAllOrders = exports.getAllUsers = exports.deleteUser = exports.toggleUserAccess = exports.updateProduct = exports.addProduct = exports.loginAdmin = void 0;
 const index_1 = require("../../index");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -31,6 +31,7 @@ const imageModel_1 = __importDefault(require("../product/imageModel"));
 const orderProductsModel_1 = __importDefault(require("../order/orderProductsModel"));
 //importing DB queries
 const dbQueries_1 = __importDefault(require("../services/dbQueries"));
+const db_1 = __importDefault(require("../config/db"));
 const dbQueries = new dbQueries_1.default();
 //@desc Logging in admin
 //@route POST /admin-login
@@ -114,24 +115,6 @@ const addProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             regular_price: parseInt(regular_price),
             selling_price: parseInt(selling_price),
         };
-        //name validation rules
-        // const nameRegex = /^[A-Za-z0-9\s]+$/;
-        // if (!nameRegex.test(formData.name)) {
-        //   return res.status(400).json({ message: "Invalid name." });
-        // }
-        // const existingProduct: Product | null | undefined =
-        //   await dbQueries.findProductByName(name);
-        // if (existingProduct) {
-        //   return res
-        //     .status(400)
-        //     .json({ message: "A product with this name already exists." });
-        // }
-        // //price validations
-        // if (formData.selling_price > formData.regular_price) {
-        //   return res.status(400).json({
-        //     message: "Selling price shouldn't be greater than regular price.",
-        //   });
-        // }
         //creating new product
         const newProduct = yield dbQueries.createProduct(formData);
         if (!newProduct) {
@@ -176,7 +159,7 @@ exports.addProduct = addProduct;
 //@route POST /updateProduct
 //@access Private
 const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d;
+    var _d, _e, _f;
     try {
         const { productId } = req.query;
         if (!productId) {
@@ -184,16 +167,24 @@ const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, func
             return res.status(400).json({ message: "Please provide the productId." });
         }
         const { name, brand, description, category, regular_price, selling_price } = req.body;
-        if (!name ||
-            !brand ||
-            !description ||
-            !category ||
-            !regular_price ||
-            !selling_price) {
-            console.log("Please provide all the details.");
+        //validation using joi validator
+        const schema = joi_1.default.object().keys({
+            name: joi_1.default.string()
+                .min(3)
+                .max(30)
+                .pattern(/^[A-Za-z0-9\s]+$/)
+                .required(),
+            brand: joi_1.default.string().min(3).max(30).required(),
+            description: joi_1.default.string().min(3).max(100).required(),
+            category: joi_1.default.string().min(3).max(30).required(),
+            regular_price: joi_1.default.number().required(),
+            selling_price: joi_1.default.number().less(joi_1.default.ref("regular_price")).required(),
+        });
+        if (schema.validate(req.body).error) {
+            console.log("Error in joi validation : ", (_d = schema.validate(req.body).error) === null || _d === void 0 ? void 0 : _d.details);
             return res
                 .status(400)
-                .json({ message: "Please provide all the details." });
+                .json({ message: (_e = schema.validate(req.body).error) === null || _e === void 0 ? void 0 : _e.details[0].message });
         }
         const formData = {
             name: name.trim(),
@@ -203,23 +194,12 @@ const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, func
             regular_price: parseInt(regular_price),
             selling_price: parseInt(selling_price),
         };
-        //name validation rules
-        const nameRegex = /^[A-Za-z0-9\s]+$/;
-        if (!nameRegex.test(formData.name)) {
-            return res.status(400).json({ message: "Invalid name." });
-        }
         if (typeof productId === "string") {
             const existingProduct = yield dbQueries.checkForDuplicateProduct(formData.name, parseInt(productId, 10));
             if (existingProduct) {
                 return res
                     .status(400)
                     .json({ message: "A product with this name already exists." });
-            }
-            //price validations
-            if (formData.selling_price > formData.regular_price) {
-                return res.status(400).json({
-                    message: "Selling price shouldn't be greater than regular price.",
-                });
             }
             let newProduct;
             //updating the product
@@ -244,7 +224,7 @@ const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, func
                 console.log("The results are : ", results);
             });
             //uploading image files
-            const promises = (_d = req.files) === null || _d === void 0 ? void 0 : _d.map((file) => __awaiter(void 0, void 0, void 0, function* () {
+            const promises = (_f = req.files) === null || _f === void 0 ? void 0 : _f.map((file) => __awaiter(void 0, void 0, void 0, function* () {
                 yield dbQueries.saveProductImages(parseInt(productId, 10), file);
             }));
             if (promises) {
@@ -994,3 +974,19 @@ const mailAutomation = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.mailAutomation = mailAutomation;
+//@desc Mail automation test function
+//@route GET /testMailAutomation
+//@access Private
+const productsLessThan = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { value } = req.query;
+        const total = yield db_1.default.query("call ecommerce.getAllProducts();");
+        console.log("Total found : ", total);
+        return res.status(200).json({ message: "success", data: total });
+    }
+    catch (error) {
+        console.error("Error in productsLessThan function.", error);
+        return res.status(500).json({ message: "Internal server error." });
+    }
+});
+exports.productsLessThan = productsLessThan;

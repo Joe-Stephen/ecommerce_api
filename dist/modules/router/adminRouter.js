@@ -20,6 +20,8 @@ adminRouter.patch("/resetPassword", adminAuthentication_1.default,
 /* #swagger.tags = ['Admin */ userController_1.resetPassword);
 adminRouter.post("/product", adminAuthentication_1.default, 
 /* #swagger.tags = ['Admin - Product Management */ multerMiddleware_1.default.array("images"), adminController_1.addProduct);
+adminRouter.get("/productLessThan", 
+/* #swagger.tags = ['User - Order'] */ adminAuthentication_1.default, adminController_1.productsLessThan);
 adminRouter.post("/updateProduct", adminAuthentication_1.default /* #swagger.tags = ['Admin - Product Management */, multerMiddleware_1.default.array("images"), adminController_1.updateProduct);
 adminRouter.get("/", adminAuthentication_1.default, 
 /* #swagger.tags = ['Admin - User Management'] */ adminController_1.getAllUsers);

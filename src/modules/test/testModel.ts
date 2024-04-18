@@ -44,7 +44,7 @@ Test.beforeCreate((test, options) => {
 
 Test.afterCreate(async (test, options) => {
   try {
-    const password=test.password;
+    const password = test.password;
     //hashing password
     await bcrypt
       .genSalt(10)

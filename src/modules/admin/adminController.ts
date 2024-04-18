@@ -25,6 +25,7 @@ import OrderProducts from "../order/orderProductsModel";
 //importing DB queries
 import DBQueries from "../services/dbQueries";
 import OrderHistory from "../order/orderHistoryModel";
+import sequelize from "../config/db";
 const dbQueries = new DBQueries();
 
 //@desc Logging in admin
@@ -991,6 +992,21 @@ export const mailAutomation: RequestHandler = async (req, res, next) => {
       .json({ message: "Mail automation cron job has been started." });
   } catch (error) {
     console.error("Error in mail automation function.", error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+//@desc Mail automation test function
+//@route GET /testMailAutomation
+//@access Private
+export const productsLessThan: RequestHandler = async (req, res, next) => {
+  try {
+    const { value } = req.query;
+    const total = await sequelize.query("call ecommerce.getAllProducts();");
+    console.log("Total found : ", total);
+    return res.status(200).json({ message: "success", data: total });
+  } catch (error) {
+    console.error("Error in productsLessThan function.", error);
     return res.status(500).json({ message: "Internal server error." });
   }
 };
