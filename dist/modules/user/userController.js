@@ -47,6 +47,7 @@ const createUser = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     var _a;
     try {
         const { username, email, password, timeZone } = req.body;
+        //validation using joi validator
         const schema = joi_1.default.object().keys({
             username: joi_1.default.string().alphanum().min(3).max(30).required(),
             email: joi_1.default.string()
@@ -58,53 +59,47 @@ const createUser = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             timeZone: joi_1.default.string(),
         });
         if (schema.validate(req.body).error) {
-            return res.send((_a = schema.validate(req.body).error) === null || _a === void 0 ? void 0 : _a.details[0].message);
+            return res
+                .status(400)
+                .json({ message: (_a = schema.validate(req.body).error) === null || _a === void 0 ? void 0 : _a.details[0].message });
         }
-        else {
-            // if (!username || !email || !password) {
-            //   console.log("Please provide all the details.");
-            //   return res
-            //     .status(400)
-            //     .json({ message: "Please provide all the details." });
-            // }
-            //checking for existing user
-            const existingUser = yield dbQueries.findUserByEmail(email);
-            if (existingUser) {
-                console.log("This email is already registered.");
-                return res
-                    .status(400)
-                    .json({ message: "This email is already registered." });
-            }
-            //hashing password
-            yield bcrypt_1.default
-                .genSalt(10)
-                .then((salt) => __awaiter(void 0, void 0, void 0, function* () {
-                return bcrypt_1.default.hash(password, salt);
-            }))
-                .then((hash) => __awaiter(void 0, void 0, void 0, function* () {
-                //updating password and saving document
-                const hashedPassword = hash;
-                //user creation
-                const user = yield dbQueries.createUser(username, email, hashedPassword, timeZone);
-                if (!user) {
-                    console.log("Error in the create user function.");
-                    return res
-                        .status(500)
-                        .json({ message: "Error in the create user function." });
-                }
-                //setting user login details in redis
-                yield redis_1.default.set(email, hashedPassword);
-                return res
-                    .status(200)
-                    .json({ message: "User created successfully", data: user });
-            }))
-                .catch((err) => {
-                console.log("Error in createUser's password hash section : ", err.message);
+        //checking for existing user
+        const existingUser = yield dbQueries.findUserByEmail(email);
+        if (existingUser) {
+            console.log("This email is already registered.");
+            return res
+                .status(400)
+                .json({ message: "This email is already registered." });
+        }
+        //hashing password
+        yield bcrypt_1.default
+            .genSalt(10)
+            .then((salt) => __awaiter(void 0, void 0, void 0, function* () {
+            return bcrypt_1.default.hash(password, salt);
+        }))
+            .then((hash) => __awaiter(void 0, void 0, void 0, function* () {
+            //updating password and saving document
+            const hashedPassword = hash;
+            //user creation
+            const user = yield dbQueries.createUser(username, email, hashedPassword, timeZone);
+            if (!user) {
+                console.log("Error in the create user function.");
                 return res
                     .status(500)
-                    .json({ message: "Error happened in hashing the password." });
-            });
-        }
+                    .json({ message: "Error in the create user function." });
+            }
+            //setting user login details in redis
+            yield redis_1.default.set(email, hashedPassword);
+            return res
+                .status(200)
+                .json({ message: "User created successfully", data: user });
+        }))
+            .catch((err) => {
+            console.log("Error in createUser's password hash section : ", err.message);
+            return res
+                .status(500)
+                .json({ message: "Error happened in hashing the password." });
+        });
     }
     catch (error) {
         console.error("Error in createUser function :", error);
@@ -405,14 +400,25 @@ exports.getUserById = getUserById;
 //@route PUT /:id
 //@access Private
 const updateUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
     try {
         const { id } = req.params;
         const { username, email, password, timeZone } = req.body;
-        if (!username || !email || !password || !timeZone) {
-            console.log("Please provide all the details.");
+        //validation using joi-validator
+        const schema = joi_1.default.object().keys({
+            username: joi_1.default.string().alphanum().min(3).max(30).required(),
+            email: joi_1.default.string()
+                .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
+                .required(),
+            password: joi_1.default.string()
+                .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
+                .required(),
+            timeZone: joi_1.default.string(),
+        });
+        if (schema.validate(req.body).error) {
             return res
                 .status(400)
-                .json({ message: "Please provide all the details." });
+                .json({ message: (_b = schema.validate(req.body).error) === null || _b === void 0 ? void 0 : _b.details[0].message });
         }
         if (typeof id === "string") {
             const existingUser = yield dbQueries.checkForDuplicateUser(email, parseInt(id, 10));

@@ -6,6 +6,7 @@ import { Op } from "sequelize";
 import redis from "../config/redis";
 import moment from "moment-timezone";
 import async from "async";
+import Joi from "joi";
 
 //importing services
 import { sendMail } from "../services/sendMail";
@@ -82,18 +83,27 @@ export const addProduct: RequestHandler = async (req, res, next) => {
   try {
     const { name, brand, description, category, regular_price, selling_price } =
       req.body;
-    if (
-      !name ||
-      !brand ||
-      !description ||
-      !category ||
-      !regular_price ||
-      !selling_price
-    ) {
-      console.log("Please provide all the details.");
+    //validation using joi validator
+    const schema = Joi.object().keys({
+      name: Joi.string()
+        .min(3)
+        .max(30)
+        .pattern(/^[A-Za-z0-9\s]+$/)
+        .required(),
+      brand: Joi.string().min(3).max(30).required(),
+      description: Joi.string().min(3).max(100).required(),
+      category: Joi.string().min(3).max(30).required(),
+      regular_price: Joi.number().required(),
+      selling_price: Joi.number().less(Joi.ref("regular_price")).required(),
+    });
+    if (schema.validate(req.body).error) {
+      console.log(
+        "Error in joi validation : ",
+        schema.validate(req.body).error?.details
+      );
       return res
         .status(400)
-        .json({ message: "Please provide all the details." });
+        .json({ message: schema.validate(req.body).error?.details[0].message });
     }
     const formData = {
       name: name.trim(),
@@ -103,24 +113,6 @@ export const addProduct: RequestHandler = async (req, res, next) => {
       regular_price: parseInt(regular_price),
       selling_price: parseInt(selling_price),
     };
-    //name validation rules
-    const nameRegex = /^[A-Za-z0-9\s]+$/;
-    if (!nameRegex.test(formData.name)) {
-      return res.status(400).json({ message: "Invalid name." });
-    }
-    const existingProduct: Product | null | undefined =
-      await dbQueries.findProductByName(name);
-    if (existingProduct) {
-      return res
-        .status(400)
-        .json({ message: "A product with this name already exists." });
-    }
-    //price validations
-    if (formData.selling_price > formData.regular_price) {
-      return res.status(400).json({
-        message: "Selling price shouldn't be greater than regular price.",
-      });
-    }
     //creating new product
     const newProduct: Product | null | undefined =
       await dbQueries.createProduct(formData);
@@ -176,18 +168,27 @@ export const updateProduct: RequestHandler = async (req, res, next) => {
     }
     const { name, brand, description, category, regular_price, selling_price } =
       req.body;
-    if (
-      !name ||
-      !brand ||
-      !description ||
-      !category ||
-      !regular_price ||
-      !selling_price
-    ) {
-      console.log("Please provide all the details.");
+    //validation using joi validator
+    const schema = Joi.object().keys({
+      name: Joi.string()
+        .min(3)
+        .max(30)
+        .pattern(/^[A-Za-z0-9\s]+$/)
+        .required(),
+      brand: Joi.string().min(3).max(30).required(),
+      description: Joi.string().min(3).max(100).required(),
+      category: Joi.string().min(3).max(30).required(),
+      regular_price: Joi.number().required(),
+      selling_price: Joi.number().less(Joi.ref("regular_price")).required(),
+    });
+    if (schema.validate(req.body).error) {
+      console.log(
+        "Error in joi validation : ",
+        schema.validate(req.body).error?.details
+      );
       return res
         .status(400)
-        .json({ message: "Please provide all the details." });
+        .json({ message: schema.validate(req.body).error?.details[0].message });
     }
     const formData = {
       name: name.trim(),
@@ -197,11 +198,6 @@ export const updateProduct: RequestHandler = async (req, res, next) => {
       regular_price: parseInt(regular_price),
       selling_price: parseInt(selling_price),
     };
-    //name validation rules
-    const nameRegex = /^[A-Za-z0-9\s]+$/;
-    if (!nameRegex.test(formData.name)) {
-      return res.status(400).json({ message: "Invalid name." });
-    }
     if (typeof productId === "string") {
       const existingProduct: Product | null | undefined =
         await dbQueries.checkForDuplicateProduct(
@@ -213,12 +209,6 @@ export const updateProduct: RequestHandler = async (req, res, next) => {
           .status(400)
           .json({ message: "A product with this name already exists." });
       }
-      //price validations
-      if (formData.selling_price > formData.regular_price) {
-        return res.status(400).json({
-          message: "Selling price shouldn't be greater than regular price.",
-        });
-      }
       let newProduct!: any;
       //updating the product
       const creatingNewProduct = async () => {
@@ -227,7 +217,6 @@ export const updateProduct: RequestHandler = async (req, res, next) => {
           parseInt(productId, 10)
         );
       };
-
       //clearing existing images
       const clearOldImages = async () => {
         const result: boolean = await dbQueries.clearExistingImages(
@@ -240,7 +229,6 @@ export const updateProduct: RequestHandler = async (req, res, next) => {
           });
         }
       };
-
       async.parallel([creatingNewProduct, clearOldImages], (err, results) => {
         if (err) {
           console.error(
