@@ -20,6 +20,7 @@ const sequelize_1 = require("sequelize");
 const redis_1 = __importDefault(require("../config/redis"));
 const moment_timezone_1 = __importDefault(require("moment-timezone"));
 const async_1 = __importDefault(require("async"));
+const joi_1 = __importDefault(require("joi"));
 //importing services
 const sendMail_1 = require("../services/sendMail");
 const notify_1 = require("../services/notify");
@@ -83,19 +84,27 @@ const generateToken = (email) => {
 //@route POST /product
 //@access Private
 const addProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _a, _b, _c;
     try {
         const { name, brand, description, category, regular_price, selling_price } = req.body;
-        if (!name ||
-            !brand ||
-            !description ||
-            !category ||
-            !regular_price ||
-            !selling_price) {
-            console.log("Please provide all the details.");
+        //validation using joi validator
+        const schema = joi_1.default.object().keys({
+            name: joi_1.default.string()
+                .min(3)
+                .max(30)
+                .pattern(/^[A-Za-z0-9\s]+$/)
+                .required(),
+            brand: joi_1.default.string().min(3).max(30).required(),
+            description: joi_1.default.string().min(3).max(100).required(),
+            category: joi_1.default.string().min(3).max(30).required(),
+            regular_price: joi_1.default.number().required(),
+            selling_price: joi_1.default.number().less(joi_1.default.ref("regular_price")).required(),
+        });
+        if (schema.validate(req.body).error) {
+            console.log("Error in joi validation : ", (_a = schema.validate(req.body).error) === null || _a === void 0 ? void 0 : _a.details);
             return res
                 .status(400)
-                .json({ message: "Please provide all the details." });
+                .json({ message: (_b = schema.validate(req.body).error) === null || _b === void 0 ? void 0 : _b.details[0].message });
         }
         const formData = {
             name: name.trim(),
@@ -106,22 +115,23 @@ const addProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             selling_price: parseInt(selling_price),
         };
         //name validation rules
-        const nameRegex = /^[A-Za-z0-9\s]+$/;
-        if (!nameRegex.test(formData.name)) {
-            return res.status(400).json({ message: "Invalid name." });
-        }
-        const existingProduct = yield dbQueries.findProductByName(name);
-        if (existingProduct) {
-            return res
-                .status(400)
-                .json({ message: "A product with this name already exists." });
-        }
-        //price validations
-        if (formData.selling_price > formData.regular_price) {
-            return res.status(400).json({
-                message: "Selling price shouldn't be greater than regular price.",
-            });
-        }
+        // const nameRegex = /^[A-Za-z0-9\s]+$/;
+        // if (!nameRegex.test(formData.name)) {
+        //   return res.status(400).json({ message: "Invalid name." });
+        // }
+        // const existingProduct: Product | null | undefined =
+        //   await dbQueries.findProductByName(name);
+        // if (existingProduct) {
+        //   return res
+        //     .status(400)
+        //     .json({ message: "A product with this name already exists." });
+        // }
+        // //price validations
+        // if (formData.selling_price > formData.regular_price) {
+        //   return res.status(400).json({
+        //     message: "Selling price shouldn't be greater than regular price.",
+        //   });
+        // }
         //creating new product
         const newProduct = yield dbQueries.createProduct(formData);
         if (!newProduct) {
@@ -134,7 +144,7 @@ const addProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         yield redis_1.default.set(`product_${newProduct.id}`, JSON.stringify(newProduct));
         const images = [];
         //uploading image files
-        const promises = (_a = req.files) === null || _a === void 0 ? void 0 : _a.map((file) => __awaiter(void 0, void 0, void 0, function* () {
+        const promises = (_c = req.files) === null || _c === void 0 ? void 0 : _c.map((file) => __awaiter(void 0, void 0, void 0, function* () {
             const productImage = yield imageModel_1.default.create({
                 productId: newProduct.id,
                 image: file.originalname,
@@ -166,7 +176,7 @@ exports.addProduct = addProduct;
 //@route POST /updateProduct
 //@access Private
 const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+    var _d;
     try {
         const { productId } = req.query;
         if (!productId) {
@@ -234,7 +244,7 @@ const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, func
                 console.log("The results are : ", results);
             });
             //uploading image files
-            const promises = (_b = req.files) === null || _b === void 0 ? void 0 : _b.map((file) => __awaiter(void 0, void 0, void 0, function* () {
+            const promises = (_d = req.files) === null || _d === void 0 ? void 0 : _d.map((file) => __awaiter(void 0, void 0, void 0, function* () {
                 yield dbQueries.saveProductImages(parseInt(productId, 10), file);
             }));
             if (promises) {
