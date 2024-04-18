@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import redis from "../config/redis";
 import moment from "moment-timezone";
+import Joi from "joi";
 
 //importing services
 import { sendMail } from "../services/sendMail";
@@ -39,11 +40,21 @@ export const serveGoogleSignPage: RequestHandler = async (req, res, next) => {
 export const createUser: RequestHandler = async (req, res, next) => {
   try {
     const { username, email, password, timeZone } = req.body;
-    if (!username || !email || !password) {
-      console.log("Please provide all the details.");
+    //validation using joi validator
+    const schema = Joi.object().keys({
+      username: Joi.string().alphanum().min(3).max(30).required(),
+      email: Joi.string()
+        .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
+        .required(),
+      password: Joi.string()
+        .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
+        .required(),
+      timeZone: Joi.string(),
+    });
+    if (schema.validate(req.body).error) {
       return res
         .status(400)
-        .json({ message: "Please provide all the details." });
+        .json({ message: schema.validate(req.body).error?.details[0].message });
     }
     //checking for existing user
     const existingUser = await dbQueries.findUserByEmail(email);
@@ -418,11 +429,21 @@ export const updateUser: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { username, email, password, timeZone } = req.body;
-    if (!username || !email || !password || !timeZone) {
-      console.log("Please provide all the details.");
+    //validation using joi-validator
+    const schema = Joi.object().keys({
+      username: Joi.string().alphanum().min(3).max(30).required(),
+      email: Joi.string()
+        .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
+        .required(),
+      password: Joi.string()
+        .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
+        .required(),
+      timeZone: Joi.string(),
+    });
+    if (schema.validate(req.body).error) {
       return res
         .status(400)
-        .json({ message: "Please provide all the details." });
+        .json({ message: schema.validate(req.body).error?.details[0].message });
     }
     if (typeof id === "string") {
       const existingUser: User | null | undefined =
@@ -467,12 +488,12 @@ export const updateUser: RequestHandler = async (req, res, next) => {
 //@access Private
 export const getMyMoment: RequestHandler = async (req, res, next) => {
   try {
-    const {username, password}=req.body;
-    const test=await dbQueries.test(username, password);
+    const { username, password } = req.body;
+    const test = await dbQueries.test(username, password);
     console.log("test : ", test);
     return res
-    .status(200)
-    .json({ message: "Test created successfully.", data: test }); 
+      .status(200)
+      .json({ message: "Test created successfully.", data: test });
   } catch (error) {
     console.error("Error in getMyMoment function.", error);
     res.status(500).json({ message: "Internal server error." });
